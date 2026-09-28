@@ -66,6 +66,26 @@
 .cc-history-meta { color: var(--cc-muted); }
 .cc-browse-button { width: 100%; display: flex; justify-content: center; align-items: center; gap: 7px; margin-top: 8px; padding: 8px; }
 
+.cc-current-event-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cc-current-event-meta { display: inline-flex; align-items: center; gap: 7px; }
+.cc-current-events-empty { padding-top: 8px; padding-bottom: 8px; }
+.cc-current-events-more {
+  width: 100%;
+  padding: 5px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--cc-muted);
+  cursor: pointer;
+  text-align: center;
+  font-size: .86em;
+}
+.cc-current-events-more:hover { color: var(--cc-text); text-decoration: underline; }
+
 .campaign-calendar .window-content { padding: 0; }
 .campaign-calendar { color: var(--color-text-primary, #222); }
 .cc-app-content { padding: 16px; height: 100%; box-sizing: border-box; overflow: hidden; }

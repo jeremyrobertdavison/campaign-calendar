@@ -2,7 +2,7 @@
   "id": "campaign-calendar",
   "title": "Campaign Calendar",
   "description": "A system-agnostic in-game calendar and campaign history for Foundry VTT. Display the current date at the top of the screen, let GMs advance or edit the date, record public or GM-only events, and allow players to browse past days with visible notes.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "authors": [
     {
       "name": "Jeremy Davison",

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1 — Current Day Events
+
+- Added a **Current Day Events** section to the top-bar dropdown.
+- Current-day event titles are now visible immediately when the date control is opened.
+- Clicking a current-day event opens the full day-events window for that date.
+- Pinned current-day events display a pin indicator; GM-only events display a lock to GMs.
+- Player views continue to show only player-visible events.
+
 ## 1.0.0 — Initial Release
 
 - Compact current-date display at the top of the Foundry interface.

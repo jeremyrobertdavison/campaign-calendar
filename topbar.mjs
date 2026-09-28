@@ -1,4 +1,4 @@
-import { advanceCurrentDate, formatDate, getCurrentDate, getDateGroups, parseDateKey, sameDate } from "./calendar-service.mjs";
+import { advanceCurrentDate, formatDate, getCurrentDate, getDateGroups, getEventsForDate, parseDateKey, sameDate } from "./calendar-service.mjs";
 import { CalendarHistoryApplication } from "./applications/history.mjs";
 import { CalendarManagerApplication } from "./applications/manager.mjs";
 import { DayEventsApplication } from "./applications/day-events.mjs";
@@ -82,6 +82,70 @@ export class CalendarTopBar {
       });
       controls.append(previous, manage, next);
       dropdown.append(controls);
+    }
+
+    const currentDivider = document.createElement("div");
+    currentDivider.className = "cc-dropdown-divider";
+    dropdown.append(currentDivider);
+
+    const currentTitle = document.createElement("div");
+    currentTitle.className = "cc-dropdown-heading";
+    currentTitle.textContent = "Current Day Events";
+    dropdown.append(currentTitle);
+
+    const currentEvents = getEventsForDate(current)
+      .sort((a, b) => Number(b.pinned) - Number(a.pinned) || a.title.localeCompare(b.title));
+
+    if (!currentEvents.length) {
+      const empty = document.createElement("div");
+      empty.className = "cc-dropdown-empty cc-current-events-empty";
+      empty.textContent = "No events recorded for the current date.";
+      dropdown.append(empty);
+    } else {
+      for (const event of currentEvents.slice(0, 6)) {
+        const row = document.createElement("button");
+        row.type = "button";
+        row.className = "cc-history-row cc-current-event-row";
+        row.title = "Open all events for the current date";
+
+        const left = document.createElement("span");
+        left.className = "cc-current-event-title";
+        left.textContent = event.title;
+
+        const right = document.createElement("span");
+        right.className = "cc-history-meta cc-current-event-meta";
+        if (event.pinned) {
+          const pin = document.createElement("i");
+          pin.className = "fa-solid fa-thumbtack";
+          pin.title = "Pinned";
+          right.append(pin);
+        }
+        if (game.user.isGM && event.visibility === "gm") {
+          const lock = document.createElement("i");
+          lock.className = "fa-solid fa-lock";
+          lock.title = "GM Only";
+          right.append(lock);
+        }
+
+        row.append(left, right);
+        row.addEventListener("click", () => {
+          new DayEventsApplication(current).render({ force: true });
+          this.closeDropdown();
+        });
+        dropdown.append(row);
+      }
+
+      if (currentEvents.length > 6) {
+        const more = document.createElement("button");
+        more.type = "button";
+        more.className = "cc-current-events-more";
+        more.textContent = `View all ${currentEvents.length} current-day events`;
+        more.addEventListener("click", () => {
+          new DayEventsApplication(current).render({ force: true });
+          this.closeDropdown();
+        });
+        dropdown.append(more);
+      }
     }
 
     const divider = document.createElement("div");

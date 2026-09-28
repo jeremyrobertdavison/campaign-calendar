@@ -2,7 +2,7 @@
 
 Campaign Calendar is a system-agnostic Foundry Virtual Tabletop module that keeps your campaign's current in-game date visible at the top of the screen and turns past dates into a browsable campaign history.
 
-GMs can control the date, define a custom calendar, and record rich-text events for any day. Players can use the date dropdown to revisit previous days that contain visible notes and open a window showing the events recorded for that date.
+GMs can control the date, define a custom calendar, and record rich-text events for any day. Players can use the date dropdown to see events recorded for the current day, revisit previous days that contain visible notes, and open a window showing the events recorded for any listed date.
 
 ## Features
 
@@ -13,7 +13,8 @@ GMs can control the date, define a custom calendar, and record rich-text events 
 - **Multiple events per day** with titles and rich-text details.
 - **Player-visible or GM-only notes** on an event-by-event basis.
 - **Pinned events** for major campaign moments.
-- **Quick history dropdown** showing recent dates with notes.
+- **Current-day event list** directly in the date dropdown, with one-click access to the full day record.
+- **Quick history dropdown** showing recent previous dates with notes.
 - **Full searchable history browser** for players and GMs.
 - **GM event manager** with edit and delete controls.
 - **JSON import/export** for calendar definitions.
@@ -59,7 +60,9 @@ The current campaign date appears at the top center of the Foundry interface. Cl
 Players can:
 
 - See the current campaign date.
-- Select recent dates that contain player-visible events.
+- See player-visible events recorded for the current day directly in the dropdown.
+- Click a current-day event to open the complete event window for that date.
+- Select recent previous dates that contain player-visible events.
 - Open the full searchable campaign history.
 
 GMs can also:
@@ -143,7 +146,7 @@ https://github.com/jeremyrobertdavison/campaign-calendar
 1. Create a **public** GitHub repository named `campaign-calendar` under `jeremyrobertdavison`.
 2. Upload the contents of this project so `module.json` is at the repository root.
 3. Commit and push the files to the `main` branch.
-4. Create a tag such as `v1.0.0` and push it.
+4. Create a tag matching the module version, such as `v1.0.1`, and push it.
 5. The included GitHub Actions workflow will create a GitHub Release and attach `campaign-calendar.zip` automatically.
 6. Use the manifest URL shown above to install the module in Foundry.
 
