@@ -1,7 +1,11 @@
-import { DEFAULT_CONFIG, DEFAULT_DATE, DEFAULT_EVENTS, MODULE_ID, SOCKET_NAME } from "./constants.mjs";
+import { DEFAULT_CONFIG, DEFAULT_DATE, DEFAULT_EVENTS, DEFAULT_FACTIONS, DEFAULT_MAPS, MODULE_ID, SOCKET_NAME } from "./constants.mjs";
 
 function clone(value) {
   return foundry.utils.deepClone(value);
+}
+
+function randomId() {
+  return foundry.utils.randomID?.() ?? crypto.randomUUID();
 }
 
 export function getConfig() {
@@ -10,6 +14,16 @@ export function getConfig() {
 
 export function getCurrentDate() {
   return clone(game.settings.get(MODULE_ID, "currentDate") ?? DEFAULT_DATE);
+}
+
+export function getFactions() {
+  const stored = game.settings.get(MODULE_ID, "factions") ?? DEFAULT_FACTIONS;
+  return clone(Array.isArray(stored?.items) ? stored.items : []);
+}
+
+export function getMaps() {
+  const stored = game.settings.get(MODULE_ID, "maps") ?? DEFAULT_MAPS;
+  return clone(Array.isArray(stored?.items) ? stored.items : []);
 }
 
 let privateJournal = null;
@@ -100,11 +114,15 @@ export function dateSortValue(date) {
   return (Number(date.year) * 10000) + (Number(date.month) * 100) + Number(date.day);
 }
 
-export function compareDatesDescending(a, b) {
+export function compareDatesAscending(a, b) {
   const eraA = String(a.era ?? "");
   const eraB = String(b.era ?? "");
-  if (eraA !== eraB) return eraB.localeCompare(eraA);
-  return dateSortValue(b) - dateSortValue(a);
+  if (eraA !== eraB) return eraA.localeCompare(eraB);
+  return dateSortValue(a) - dateSortValue(b);
+}
+
+export function compareDatesDescending(a, b) {
+  return compareDatesAscending(b, a);
 }
 
 export function shiftDate(date, delta, config = getConfig()) {
@@ -144,6 +162,32 @@ export function shiftDate(date, delta, config = getConfig()) {
 async function emitSync(reason = "update") {
   Hooks.callAll("campaignCalendarUpdated", { reason, sender: game.user?.id });
   if (game.socket) game.socket.emit(SOCKET_NAME, { type: "sync", reason, sender: game.user?.id });
+}
+
+export async function raiseHand() {
+  if (!game.user) throw new Error("Campaign Calendar: no active Foundry user.");
+  if (game.user.isGM) {
+    ui.notifications?.info("Raise Hand is intended for players.");
+    return false;
+  }
+
+  const activeGMs = game.users?.filter?.((user) => user.active && user.isGM) ?? [];
+  if (!activeGMs.length) {
+    ui.notifications?.warn("No GM is currently connected.");
+    return false;
+  }
+
+  const payload = {
+    type: "raise-hand",
+    sender: game.user.id,
+    playerId: game.user.id,
+    playerName: String(game.user.name ?? "A player"),
+    timestamp: Date.now()
+  };
+
+  game.socket?.emit(SOCKET_NAME, payload);
+  ui.notifications?.info("Your hand has been raised for the GM.");
+  return true;
 }
 
 function requireGM() {
@@ -188,6 +232,48 @@ export async function setCalendarConfig(config) {
   return clean;
 }
 
+export async function setFactions(factions) {
+  requireGM();
+  const seen = new Set();
+  const items = (factions ?? []).map((faction) => {
+    let id = String(faction.id ?? "").trim() || randomId();
+    while (seen.has(id)) id = randomId();
+    seen.add(id);
+    return {
+      id,
+      name: String(faction.name ?? "").trim(),
+      baseScore: Number.parseInt(faction.baseScore ?? 0, 10) || 0
+    };
+  }).filter((faction) => faction.name);
+
+  await game.settings.set(MODULE_ID, "factions", { items });
+  await emitSync("factions");
+  return items;
+}
+
+export async function setMaps(maps) {
+  requireGM();
+  const seen = new Set();
+  const now = Date.now();
+  const items = (maps ?? []).map((map, index) => {
+    let id = String(map.id ?? "").trim() || randomId();
+    while (seen.has(id)) id = randomId();
+    seen.add(id);
+    return {
+      id,
+      name: String(map.name ?? "").trim(),
+      path: String(map.path ?? "").trim(),
+      description: String(map.description ?? "").trim(),
+      sort: Number.isFinite(Number(map.sort)) ? Number(map.sort) : index,
+      addedAt: Number(map.addedAt) || now
+    };
+  }).filter((map) => map.name && map.path);
+
+  await game.settings.set(MODULE_ID, "maps", { items });
+  await emitSync("maps");
+  return items;
+}
+
 async function savePublicEvents(items) {
   requireGM();
   await game.settings.set(MODULE_ID, "events", { items });
@@ -207,8 +293,31 @@ async function saveEventStores(publicItems, privateItems, reason = "events") {
   await emitSync(reason);
 }
 
-function randomId() {
-  return foundry.utils.randomID?.() ?? crypto.randomUUID();
+function normalizeXp(value) {
+  if (value === "" || value === null || value === undefined) return null;
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeFactionChanges(changes = []) {
+  const factions = getFactions();
+  const byId = new Map(factions.map((faction) => [faction.id, faction]));
+  return (Array.isArray(changes) ? changes : []).map((change) => {
+    const factionId = String(change.factionId ?? "").trim();
+    const faction = byId.get(factionId);
+    return {
+      factionId,
+      factionName: String(faction?.name ?? change.factionName ?? "Unknown Faction").trim() || "Unknown Faction",
+      delta: Number.parseInt(change.delta ?? 0, 10) || 0
+    };
+  }).filter((change) => change.factionId && change.delta !== 0);
+}
+
+function normalizeItemChanges(changes = []) {
+  return (Array.isArray(changes) ? changes : []).map((change) => ({
+    name: String(change.name ?? "").trim(),
+    quantity: Number.parseInt(change.quantity ?? 0, 10) || 0
+  })).filter((change) => change.name && change.quantity !== 0);
 }
 
 export async function createEvent(data) {
@@ -224,6 +333,9 @@ export async function createEvent(data) {
     body: String(data.body ?? ""),
     visibility: data.visibility === "gm" ? "gm" : "public",
     pinned: Boolean(data.pinned),
+    xp: normalizeXp(data.xp),
+    factionChanges: normalizeFactionChanges(data.factionChanges),
+    itemChanges: normalizeItemChanges(data.itemChanges),
     createdBy: game.user.id,
     createdAt: now,
     updatedAt: now
@@ -248,6 +360,9 @@ export async function updateEvent(id, data) {
     body: String(data.body ?? existing.body ?? ""),
     visibility: data.visibility === "gm" ? "gm" : "public",
     pinned: Boolean(data.pinned),
+    xp: normalizeXp(data.xp),
+    factionChanges: normalizeFactionChanges(data.factionChanges ?? existing.factionChanges),
+    itemChanges: normalizeItemChanges(data.itemChanges ?? existing.itemChanges),
     updatedAt: Date.now()
   };
 
@@ -276,13 +391,33 @@ export function getVisibleEvents({ includeFuture = true } = {}) {
   return getAllEvents().filter((event) => {
     if (!game.user?.isGM && event.visibility === "gm") return false;
     if (includeFuture) return true;
-    if (String(event.date?.era ?? "") !== String(current.era ?? "")) return true;
-    return dateSortValue(event.date) <= dateSortValue(current);
+    return compareDatesAscending(event.date, current) <= 0;
   });
 }
 
 export function getEventsForDate(date) {
   return getVisibleEvents().filter((event) => sameDate(event.date, date));
+}
+
+export function getFactionStandings(date = getCurrentDate()) {
+  const target = normalizeDate(date);
+  const factions = getFactions();
+  const scores = new Map(factions.map((faction) => [faction.id, Number(faction.baseScore) || 0]));
+  const visibleEvents = getVisibleEvents({ includeFuture: true });
+
+  for (const event of visibleEvents) {
+    if (compareDatesAscending(event.date, target) > 0) continue;
+    for (const change of (event.factionChanges ?? [])) {
+      if (!scores.has(change.factionId)) continue;
+      scores.set(change.factionId, scores.get(change.factionId) + (Number(change.delta) || 0));
+    }
+  }
+
+  return factions.map((faction) => ({
+    ...faction,
+    score: scores.get(faction.id) ?? (Number(faction.baseScore) || 0),
+    changeFromBase: (scores.get(faction.id) ?? (Number(faction.baseScore) || 0)) - (Number(faction.baseScore) || 0)
+  }));
 }
 
 export function getDateGroups({ limit = null, includeFuture = true } = {}) {

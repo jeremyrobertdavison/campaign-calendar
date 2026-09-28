@@ -1,7 +1,18 @@
-import { advanceCurrentDate, formatDate, getCurrentDate, getDateGroups, getEventsForDate, parseDateKey, sameDate } from "./calendar-service.mjs";
+import {
+  advanceCurrentDate,
+  formatDate,
+  getCurrentDate,
+  getDateGroups,
+  getEventsForDate,
+  getFactionStandings,
+  parseDateKey,
+  raiseHand,
+  sameDate
+} from "./calendar-service.mjs";
 import { CalendarHistoryApplication } from "./applications/history.mjs";
 import { CalendarManagerApplication } from "./applications/manager.mjs";
 import { DayEventsApplication } from "./applications/day-events.mjs";
+import { MapExplorerApplication } from "./applications/map-explorer.mjs";
 
 export class CalendarTopBar {
   static mount() {
@@ -148,6 +159,46 @@ export class CalendarTopBar {
       }
     }
 
+    const factionDivider = document.createElement("div");
+    factionDivider.className = "cc-dropdown-divider";
+    dropdown.append(factionDivider);
+
+    const factionTitle = document.createElement("div");
+    factionTitle.className = "cc-dropdown-heading";
+    factionTitle.textContent = "Current Faction Standings";
+    dropdown.append(factionTitle);
+
+    const standings = getFactionStandings(current);
+    if (!standings.length) {
+      const empty = document.createElement("div");
+      empty.className = "cc-dropdown-empty cc-current-events-empty";
+      empty.textContent = game.user.isGM ? "No factions configured yet." : "No factions are being tracked yet.";
+      dropdown.append(empty);
+    } else {
+      for (const faction of standings.slice(0, 8)) {
+        const row = document.createElement("div");
+        row.className = "cc-faction-standings-row";
+        row.title = `Starting score: ${faction.baseScore}`;
+        const name = document.createElement("span");
+        name.textContent = faction.name;
+        const score = document.createElement("strong");
+        score.textContent = String(faction.score);
+        row.append(name, score);
+        dropdown.append(row);
+      }
+      if (standings.length > 8) {
+        const more = document.createElement("button");
+        more.type = "button";
+        more.className = "cc-current-events-more";
+        more.textContent = `View all ${standings.length} factions`;
+        more.addEventListener("click", () => {
+          new DayEventsApplication(current).render({ force: true });
+          this.closeDropdown();
+        });
+        dropdown.append(more);
+      }
+    }
+
     const divider = document.createElement("div");
     divider.className = "cc-dropdown-divider";
     dropdown.append(divider);
@@ -189,6 +240,22 @@ export class CalendarTopBar {
     });
     browse.classList.add("cc-browse-button");
     dropdown.append(browse);
+
+    const maps = this.makeButton("fa-solid fa-map", "Maps", () => {
+      new MapExplorerApplication().render({ force: true });
+      this.closeDropdown();
+    });
+    maps.classList.add("cc-browse-button", "cc-maps-button");
+    dropdown.append(maps);
+
+    if (!game.user.isGM) {
+      const raise = this.makeButton("fa-solid fa-hand", "Raise Hand", async () => {
+        await raiseHand();
+        this.closeDropdown();
+      });
+      raise.classList.add("cc-browse-button", "cc-raise-hand-button");
+      dropdown.append(raise);
+    }
   }
 
   static makeButton(iconClass, label, handler) {

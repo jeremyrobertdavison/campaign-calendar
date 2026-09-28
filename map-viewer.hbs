@@ -1,0 +1,22 @@
+<section class="cc-map-viewer-content">
+  {{#if map}}
+    <header class="cc-map-viewer-toolbar">
+      <div class="cc-map-viewer-title">
+        <strong>{{map.name}}</strong>
+        {{#if map.description}}<span>{{map.description}}</span>{{/if}}
+      </div>
+      <div class="cc-map-viewer-controls">
+        <button type="button" class="cc-icon-button" data-action="zoomOut" title="Zoom out"><i class="fa-solid fa-minus"></i></button>
+        <span class="cc-map-zoom-label" data-role="zoom-label">100%</span>
+        <button type="button" class="cc-icon-button" data-action="zoomIn" title="Zoom in"><i class="fa-solid fa-plus"></i></button>
+        <button type="button" class="cc-secondary-button" data-action="fitMap"><i class="fa-solid fa-compress"></i> Fit</button>
+        <button type="button" class="cc-secondary-button" data-action="actualSize"><i class="fa-solid fa-magnifying-glass"></i> 100%</button>
+      </div>
+    </header>
+    <div class="cc-map-viewer-viewport" title="Drag to pan • Mouse wheel to zoom • Double-click to fit">
+      <img class="cc-map-viewer-image" src="{{map.path}}" alt="{{map.name}}" draggable="false">
+    </div>
+  {{else}}
+    <div class="cc-empty-state"><p>This map is no longer available.</p></div>
+  {{/if}}
+</section>

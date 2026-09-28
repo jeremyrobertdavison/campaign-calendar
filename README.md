@@ -2,7 +2,7 @@
 
 Campaign Calendar is a system-agnostic Foundry Virtual Tabletop module that keeps your campaign's current in-game date visible at the top of the screen and turns past dates into a browsable campaign history.
 
-GMs can control the date, define a custom calendar, and record rich-text events for any day. Players can use the date dropdown to see events recorded for the current day, revisit previous days that contain visible notes, and open a window showing the events recorded for any listed date.
+GMs can control the date, define a custom calendar, record rich-text events for any day, and track faction reputation, XP, and item/equipment changes tied to those events. Players can use the date dropdown to see events recorded for the current day, view current faction standings, revisit previous days that contain visible notes, open a window showing the events and historical faction scores for any listed date, open a GM-curated Map Explorer for campaign maps they have been given, and raise their hand to alert the GM.
 
 ## Features
 
@@ -14,6 +14,12 @@ GMs can control the date, define a custom calendar, and record rich-text events 
 - **Player-visible or GM-only notes** on an event-by-event basis.
 - **Pinned events** for major campaign moments.
 - **Current-day event list** directly in the date dropdown, with one-click access to the full day record.
+- **Faction tracking** with GM-configured faction names and starting scores.
+- **Current faction standings** visible to players in the current-date dropdown.
+- **Historical faction standings** reconstructed for past dates from the event ledger.
+- **Faction changes per event**, including visible gain/loss values such as `+2` or `-5`.
+- **XP per event**, including positive or negative adjustments.
+- **Item and equipment gains/losses per event**, with signed quantities.
 - **Quick history dropdown** showing recent previous dates with notes.
 - **Full searchable history browser** for players and GMs.
 - **GM event manager** with edit and delete controls.
@@ -21,6 +27,12 @@ GMs can control the date, define a custom calendar, and record rich-text events 
 - **Persistent world data** stored in Foundry world settings.
 - **System agnostic**: no game system dependency.
 - **Public API** so macros and other modules can advance the calendar or add events.
+- **GM-curated Map Explorer** accessible directly from the date dropdown.
+- **Self-service player maps**: players can open any map the GM has added without changing scenes or asking the GM to re-share it.
+- **Foundry File Picker integration** for adding map image files from User Data, Public, or configured storage.
+- **Map search and thumbnail browser** with optional short descriptions.
+- **Interactive map viewer** with mouse-wheel zoom, click-drag panning, Fit, and 100% controls.
+- **Raise Hand** button for players that opens an immediate GM-side alert identifying the player.
 
 ## Compatibility
 
@@ -60,6 +72,9 @@ The current campaign date appears at the top center of the Foundry interface. Cl
 Players can:
 
 - See the current campaign date.
+- Open **Maps** to browse campaign map images the GM has made available.
+- Select **Raise Hand** to alert connected GMs that they have a question or want the GM's attention.
+- See current faction scores directly in the date dropdown.
 - See player-visible events recorded for the current day directly in the dropdown.
 - Click a current-day event to open the complete event window for that date.
 - Select recent previous dates that contain player-visible events.
@@ -83,8 +98,53 @@ Each event supports:
 - Rich-text event details
 - Player-visible or GM-only visibility
 - Pinned/important status
+- XP gained or lost
+- One or more faction score changes
+- One or more item/equipment gains or losses
 
 Several events can exist on the same date.
+
+### Factions and Historical Scores
+
+In the GM Manager, use the **Factions** panel to add a faction name and its starting score. Event records can then apply positive or negative changes to one or more factions.
+
+Campaign Calendar calculates faction standings from the ledger instead of overwriting history. This means:
+
+- The current date shows the current score after all visible events up to that date.
+- Opening a previous date shows the score as it stood at the end of that historical day.
+- Each event shows its own faction gain or loss.
+- Editing or moving an event automatically changes the derived historical scores.
+- GM-only event changes remain private: players only calculate faction standings from player-visible events, while GMs also see adjustments from GM-only events.
+
+Item/equipment changes are a campaign-history ledger; they do not directly add or remove Items from Actor sheets.
+
+
+### Campaign Maps
+
+The date dropdown includes a **Maps** button for both players and GMs. It opens the Map Explorer, which contains only map images that have been explicitly added to Campaign Calendar by a GM. The module does not automatically expose Foundry Scenes, Tiles, Journals, or other image files.
+
+To add maps as a GM:
+
+1. Open **Manage** from the calendar dropdown.
+2. Find the **Campaign Maps** panel.
+3. Select **Add Map**.
+4. Enter a map name and optional short description.
+5. Use **Browse** to choose an image with Foundry's File Picker, or enter the Foundry asset path directly.
+6. Select **Save Maps**.
+
+Players can then open **Maps** whenever they want. Selecting a map opens an individual viewer on that player's client, so opening or inspecting a map does not change the active Scene for anyone else. The viewer supports mouse-wheel zoom, click-and-drag panning, **Fit**, **100%**, and double-click-to-fit.
+
+Removing a map from the Campaign Maps panel removes it from the Map Explorer the next time clients synchronize. Removing it from this module does not delete the underlying image file from Foundry storage.
+
+### Raise Hand
+
+Players have a **Raise Hand** button at the bottom of the calendar dropdown. Clicking it immediately sends an alert over Foundry's module socket to every connected GM. The GM receives a pop-up such as:
+
+```text
+Player Alex has raised their hand.
+```
+
+The alert includes an **Acknowledge** button for the GM. If no GM is currently connected, the player is told that no GM is available. Raising a hand does not post to chat, alter calendar data, or create a persistent campaign record. The player's Foundry user name is used in the alert.
 
 ### Custom Calendar
 
@@ -123,12 +183,30 @@ await game.modules.get("campaign-calendar").api.advanceDay(-1);
 // Read the current date
 const date = game.modules.get("campaign-calendar").api.getCurrentDate();
 
+// Read current faction standings
+const standings = game.modules.get("campaign-calendar").api.getFactionStandings(date);
+
+// Read maps made available by the GM
+const maps = game.modules.get("campaign-calendar").api.getMaps();
+
+// Open the Map Explorer
+game.modules.get("campaign-calendar").api.openMaps();
+
+// Open one map by ID
+game.modules.get("campaign-calendar").api.openMap(maps[0].id);
+
+// Player: alert connected GMs
+await game.modules.get("campaign-calendar").api.raiseHand();
+
 // Add a player-visible event
 await game.modules.get("campaign-calendar").api.createEvent({
   title: "Arrival at Ravenhiem",
   body: "<p>The party reached the western gate shortly before sunset.</p>",
   visibility: "public",
   pinned: false,
+  xp: 500,
+  factionChanges: [{ factionId: "exampleFactionId", delta: 2 }],
+  itemChanges: [{ name: "Potion of Healing", quantity: 1 }],
   date
 });
 ```
@@ -146,15 +224,15 @@ https://github.com/jeremyrobertdavison/campaign-calendar
 1. Create a **public** GitHub repository named `campaign-calendar` under `jeremyrobertdavison`.
 2. Upload the contents of this project so `module.json` is at the repository root.
 3. Commit and push the files to the `main` branch.
-4. Create a tag matching the module version, such as `v1.0.1`, and push it.
+4. Create a tag matching the module version, such as `v1.3.0`, and push it.
 5. The included GitHub Actions workflow will create a GitHub Release and attach `campaign-calendar.zip` automatically.
 6. Use the manifest URL shown above to install the module in Foundry.
 
-For later versions, update the `version` field in `module.json`, update `CHANGELOG.md`, commit the changes, and push a new version tag such as `v1.1.0`.
+For later versions, update the `version` field in `module.json`, update `CHANGELOG.md`, commit the changes, and push a new version tag such as `v1.3.0`.
 
 ## Data and Permissions
 
-The current date, calendar definition, and player-visible events are stored in Foundry world settings. GM-only events are stored separately in a private Journal Entry owned only by the GM role, rather than being sent as part of the public event store. Only GMs can modify calendar data. Players receive read-only access to events marked **Visible to Players**.
+The current date, calendar definition, faction definitions, campaign map definitions, and player-visible events are stored in Foundry world settings. GM-only events are stored separately in a private Journal Entry owned only by the GM role, rather than being sent as part of the public event store. Only GMs can modify calendar data. Players receive read-only access to events marked **Visible to Players**. Player-facing faction standings are derived only from those visible events, preventing GM-only event adjustments from leaking through faction totals.
 
 As with any module that stores campaign data, back up your Foundry user data before major upgrades.
 

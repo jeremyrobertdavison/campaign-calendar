@@ -5,14 +5,19 @@ import {
   getAllEvents,
   getConfig,
   getCurrentDate,
+  getFactions,
+  getMaps,
   makeDateKey,
   normalizeDate,
   parseDateKey,
   setCalendarConfig,
-  setCurrentDate
+  setCurrentDate,
+  setFactions,
+  setMaps
 } from "../calendar-service.mjs";
 import { DayEventsApplication } from "./day-events.mjs";
 import { EventEditorApplication } from "./event-editor.mjs";
+import { MapExplorerApplication } from "./map-explorer.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 
@@ -22,11 +27,15 @@ function plainText(html = "") {
   return (div.textContent ?? "").trim();
 }
 
+function randomId() {
+  return foundry.utils.randomID?.() ?? crypto.randomUUID();
+}
+
 export class CalendarManagerApplication extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: "campaign-calendar-manager",
     classes: ["campaign-calendar", "campaign-calendar-manager"],
-    position: { width: 760, height: 760 },
+    position: { width: 820, height: 820 },
     window: {
       title: "Campaign Calendar — GM Manager",
       icon: "fa-solid fa-calendar-days",
@@ -40,6 +49,14 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
       editEvent: CalendarManagerApplication.editEvent,
       deleteEvent: CalendarManagerApplication.deleteEvent,
       openDay: CalendarManagerApplication.openDay,
+      addFaction: CalendarManagerApplication.addFaction,
+      removeFaction: CalendarManagerApplication.removeFaction,
+      saveFactions: CalendarManagerApplication.saveFactions,
+      addMap: CalendarManagerApplication.addMap,
+      removeMap: CalendarManagerApplication.removeMap,
+      browseMap: CalendarManagerApplication.browseMap,
+      saveMaps: CalendarManagerApplication.saveMaps,
+      openMapExplorer: CalendarManagerApplication.openMapExplorer,
       saveConfig: CalendarManagerApplication.saveConfig,
       exportConfig: CalendarManagerApplication.exportConfig,
       importConfig: CalendarManagerApplication.importConfig
@@ -69,6 +86,9 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
     const context = await super._prepareContext(options);
     const config = getConfig();
     const current = getCurrentDate();
+    const factions = getFactions();
+    const maps = getMaps();
+    const factionNames = new Map(factions.map((faction) => [faction.id, faction.name]));
     const events = getAllEvents()
       .sort((a, b) => {
         const ea = String(a.date?.era ?? "");
@@ -78,13 +98,20 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
         const vb = (Number(b.date?.year) * 10000) + (Number(b.date?.month) * 100) + Number(b.date?.day);
         return vb - va || Number(b.pinned) - Number(a.pinned);
       })
-      .map((entry) => ({
-        ...entry,
-        dateLabel: formatDate(entry.date, config),
-        dateKey: makeDateKey(entry.date),
-        bodyPreview: plainText(entry.body).slice(0, 150),
-        searchText: `${entry.title} ${plainText(entry.body)} ${formatDate(entry.date, config)}`.toLowerCase()
-      }));
+      .map((entry) => {
+        const trackedText = [
+          Number.isFinite(entry.xp) ? `${entry.xp} xp` : "",
+          ...(entry.factionChanges ?? []).map((change) => `${factionNames.get(change.factionId) ?? change.factionName ?? "faction"} ${change.delta}`),
+          ...(entry.itemChanges ?? []).map((change) => `${change.name} ${change.quantity}`)
+        ].join(" ");
+        return {
+          ...entry,
+          dateLabel: formatDate(entry.date, config),
+          dateKey: makeDateKey(entry.date),
+          bodyPreview: plainText(entry.body).slice(0, 150),
+          searchText: `${entry.title} ${plainText(entry.body)} ${formatDate(entry.date, config)} ${trackedText}`.toLowerCase()
+        };
+      });
 
     return {
       ...context,
@@ -93,6 +120,8 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
       currentLabel: formatDate(current, config),
       months: config.months.map((month, index) => ({ ...month, index, selected: index === current.month })),
       monthsText: config.months.map((month) => `${month.name}|${month.days}`).join("\n"),
+      factions,
+      maps,
       events
     };
   }
@@ -173,6 +202,132 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
   static openDay(event, target) {
     if (!target.dataset.dateKey) return;
     new DayEventsApplication(parseDateKey(target.dataset.dateKey)).render({ force: true });
+  }
+
+  static addFaction() {
+    const list = this.element.querySelector('[data-role="faction-list"]');
+    if (!list) return;
+    const row = document.createElement("div");
+    row.className = "cc-faction-edit-row";
+    row.dataset.factionId = randomId();
+
+    const name = document.createElement("input");
+    name.type = "text";
+    name.dataset.role = "faction-name";
+    name.placeholder = "Faction name";
+
+    const score = document.createElement("input");
+    score.type = "number";
+    score.dataset.role = "faction-base-score";
+    score.value = "0";
+    score.title = "Starting score";
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "cc-icon-button danger";
+    remove.dataset.action = "removeFaction";
+    remove.title = "Remove faction";
+    remove.innerHTML = '<i class="fa-solid fa-trash"></i>';
+
+    row.append(name, score, remove);
+    list.append(row);
+    name.focus();
+  }
+
+  static removeFaction(event, target) {
+    target.closest(".cc-faction-edit-row")?.remove();
+  }
+
+  static async saveFactions() {
+    const rows = [...this.element.querySelectorAll(".cc-faction-edit-row")];
+    const factions = rows.map((row) => ({
+      id: row.dataset.factionId,
+      name: row.querySelector('[data-role="faction-name"]')?.value ?? "",
+      baseScore: Number(row.querySelector('[data-role="faction-base-score"]')?.value ?? 0)
+    }));
+    await setFactions(factions);
+    ui.notifications.info("Faction configuration saved.");
+    this.render({ force: true });
+  }
+
+  static addMap() {
+    const list = this.element.querySelector('[data-role="map-list"]');
+    if (!list) return;
+
+    const row = document.createElement("div");
+    row.className = "cc-map-edit-row";
+    row.dataset.mapId = randomId();
+    row.dataset.addedAt = String(Date.now());
+    row.innerHTML = `
+      <div class="cc-map-edit-preview cc-map-edit-preview-empty" data-role="map-preview-wrap">
+        <i class="fa-regular fa-map"></i>
+        <img data-role="map-preview" alt="" hidden>
+      </div>
+      <div class="cc-map-edit-fields">
+        <input type="text" data-role="map-name" placeholder="Map name">
+        <div class="cc-map-path-row">
+          <input type="text" data-role="map-path" placeholder="path/to/map.webp">
+          <button type="button" class="cc-secondary-button" data-action="browseMap"><i class="fa-solid fa-folder-open"></i> Browse</button>
+        </div>
+        <input type="text" data-role="map-description" placeholder="Short description (optional)">
+      </div>
+      <button type="button" class="cc-icon-button danger" data-action="removeMap" title="Remove map"><i class="fa-solid fa-trash"></i></button>
+    `;
+    list.append(row);
+    row.querySelector('[data-role="map-name"]')?.focus();
+  }
+
+  static removeMap(event, target) {
+    target.closest(".cc-map-edit-row")?.remove();
+  }
+
+  static browseMap(event, target) {
+    const row = target.closest(".cc-map-edit-row");
+    const input = row?.querySelector('[data-role="map-path"]');
+    if (!row || !input) return;
+
+    const FilePickerClass = foundry.applications.apps.FilePicker?.implementation
+      ?? foundry.applications.apps.FilePicker
+      ?? globalThis.FilePicker;
+    if (!FilePickerClass) {
+      ui.notifications.error("Foundry's File Picker is not available.");
+      return;
+    }
+
+    const picker = new FilePickerClass({
+      type: "image",
+      current: input.value,
+      callback: (path) => {
+        input.value = path;
+        const preview = row.querySelector('[data-role="map-preview"]');
+        const wrap = row.querySelector('[data-role="map-preview-wrap"]');
+        if (preview && wrap) {
+          preview.src = path;
+          preview.hidden = false;
+          wrap.classList.remove("cc-map-edit-preview-empty");
+        }
+      }
+    });
+    picker.render({ force: true });
+  }
+
+  static async saveMaps() {
+    const rows = [...this.element.querySelectorAll(".cc-map-edit-row")];
+    const maps = rows.map((row, index) => ({
+      id: row.dataset.mapId,
+      name: row.querySelector('[data-role="map-name"]')?.value ?? "",
+      path: row.querySelector('[data-role="map-path"]')?.value ?? "",
+      description: row.querySelector('[data-role="map-description"]')?.value ?? "",
+      addedAt: Number(row.dataset.addedAt) || Date.now(),
+      sort: index
+    }));
+    const saved = await setMaps(maps);
+    ui.notifications.info(`${saved.length} campaign map${saved.length === 1 ? "" : "s"} saved.`);
+    this.render({ force: true });
+  }
+
+  static openMapExplorer() {
+    new MapExplorerApplication().render({ force: true });
   }
 
   static async saveConfig() {

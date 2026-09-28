@@ -7,6 +7,23 @@
     <span class="cc-event-count">{{events.length}} event{{#unless (eq events.length 1)}}s{{/unless}}</span>
   </header>
 
+  {{#if standings.length}}
+    <section class="cc-day-standings">
+      <div class="cc-day-standings-header">
+        <h3><i class="fa-solid fa-flag"></i> {{standingsTitle}}</h3>
+        {{#unless isCurrent}}<small>Scores shown are the historical totals for this date.</small>{{/unless}}
+      </div>
+      <div class="cc-day-standings-grid">
+        {{#each standings}}
+          <div class="cc-standing-card" title="Starting score: {{baseScore}}">
+            <span>{{name}}</span>
+            <strong>{{score}}</strong>
+          </div>
+        {{/each}}
+      </div>
+    </section>
+  {{/if}}
+
   <div class="cc-day-event-list">
     {{#if events.length}}
       {{#each events}}
@@ -17,7 +34,41 @@
               <span class="cc-visibility-badge {{visibility}}">{{#if (eq visibility "gm")}}GM Only{{else}}Players{{/if}}</span>
             {{/if}}
           </div>
-          <div class="cc-event-body">{{{bodyHtml}}}</div>
+
+          {{#if hasTracking}}
+            <div class="cc-event-tracking-summary">
+              {{#if hasXp}}
+                <div class="cc-tracking-group">
+                  <strong><i class="fa-solid fa-star"></i> XP</strong>
+                  <span class="cc-delta {{xpClass}}">{{xpDisplay}} XP</span>
+                </div>
+              {{/if}}
+
+              {{#if factionChanges.length}}
+                <div class="cc-tracking-group">
+                  <strong><i class="fa-solid fa-flag"></i> Faction Changes</strong>
+                  <div class="cc-change-list">
+                    {{#each factionChanges}}
+                      <span class="cc-change-chip"><span>{{name}}</span> <b class="cc-delta {{deltaClass}}">{{deltaDisplay}}</b></span>
+                    {{/each}}
+                  </div>
+                </div>
+              {{/if}}
+
+              {{#if itemChanges.length}}
+                <div class="cc-tracking-group">
+                  <strong><i class="fa-solid fa-box-open"></i> Items & Equipment</strong>
+                  <div class="cc-change-list">
+                    {{#each itemChanges}}
+                      <span class="cc-change-chip"><b class="cc-delta {{deltaClass}}">{{quantityDisplay}}</b> <span>{{name}}</span></span>
+                    {{/each}}
+                  </div>
+                </div>
+              {{/if}}
+            </div>
+          {{/if}}
+
+          {{#if bodyHtml}}<div class="cc-event-body">{{{bodyHtml}}}</div>{{/if}}
         </article>
       {{/each}}
     {{else}}

@@ -16,16 +16,78 @@
     </div>
     <div class="cc-date-control-row">
       <button type="button" class="cc-icon-button" data-action="previousDay" title="Previous day"><i class="fa-solid fa-minus"></i></button>
-      <select name="current-month">
+      <label class="cc-date-field"><span>Month</span><select name="current-month">
         {{#each months}}
           <option value="{{index}}" {{#if selected}}selected{{/if}}>{{name}}</option>
         {{/each}}
-      </select>
-      <input type="number" name="current-day" min="1" value="{{current.day}}" aria-label="Day">
-      <input type="number" name="current-year" value="{{current.year}}" aria-label="Year">
-      <input type="text" name="current-era" value="{{current.era}}" placeholder="Era / Age" aria-label="Era or Age">
+      </select></label>
+      <label class="cc-date-field"><span>Day</span><input type="number" name="current-day" min="1" value="{{current.day}}"></label>
+      <label class="cc-date-field"><span>Year</span><input type="number" name="current-year" value="{{current.year}}"></label>
+      <label class="cc-date-field"><span>Era / Age</span><input type="text" name="current-era" value="{{current.era}}" placeholder="DR"></label>
       <button type="button" class="cc-secondary-button" data-action="saveDate"><i class="fa-solid fa-check"></i> Set Date</button>
       <button type="button" class="cc-icon-button" data-action="nextDay" title="Next day"><i class="fa-solid fa-plus"></i></button>
+    </div>
+  </section>
+
+  <section class="cc-panel">
+    <div class="cc-panel-title cc-panel-title-row">
+      <div>
+        <h3><i class="fa-solid fa-flag"></i> Factions</h3>
+        <p>Set each faction's starting score. Event changes are added to this value to create the current and historical scores.</p>
+      </div>
+      <button type="button" class="cc-secondary-button" data-action="addFaction"><i class="fa-solid fa-plus"></i> Add Faction</button>
+    </div>
+    <div class="cc-faction-edit-head">
+      <span>Faction</span><span>Starting Score</span><span></span>
+    </div>
+    <div class="cc-faction-edit-list" data-role="faction-list">
+      {{#each factions}}
+        <div class="cc-faction-edit-row" data-faction-id="{{id}}">
+          <input type="text" data-role="faction-name" value="{{name}}" placeholder="Faction name">
+          <input type="number" data-role="faction-base-score" value="{{baseScore}}" title="Starting score">
+          <button type="button" class="cc-icon-button danger" data-action="removeFaction" title="Remove faction"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      {{/each}}
+    </div>
+    {{#unless factions.length}}<p class="cc-helper-message">No factions are configured yet.</p>{{/unless}}
+    <div class="cc-config-actions">
+      <button type="button" class="cc-primary-button" data-action="saveFactions"><i class="fa-solid fa-floppy-disk"></i> Save Factions</button>
+    </div>
+  </section>
+
+  <section class="cc-panel">
+    <div class="cc-panel-title cc-panel-title-row">
+      <div>
+        <h3><i class="fa-solid fa-map"></i> Campaign Maps</h3>
+        <p>Add map images that players can open for themselves from the calendar dropdown. Only maps saved here appear in the Map Explorer.</p>
+      </div>
+      <div class="cc-manager-map-actions">
+        <button type="button" class="cc-secondary-button" data-action="openMapExplorer"><i class="fa-solid fa-map-location-dot"></i> Open Explorer</button>
+        <button type="button" class="cc-secondary-button" data-action="addMap"><i class="fa-solid fa-plus"></i> Add Map</button>
+      </div>
+    </div>
+
+    <div class="cc-map-edit-list" data-role="map-list">
+      {{#each maps}}
+        <div class="cc-map-edit-row" data-map-id="{{id}}" data-added-at="{{addedAt}}">
+          <div class="cc-map-edit-preview" data-role="map-preview-wrap">
+            <img data-role="map-preview" src="{{path}}" alt="{{name}}">
+          </div>
+          <div class="cc-map-edit-fields">
+            <input type="text" data-role="map-name" value="{{name}}" placeholder="Map name">
+            <div class="cc-map-path-row">
+              <input type="text" data-role="map-path" value="{{path}}" placeholder="path/to/map.webp">
+              <button type="button" class="cc-secondary-button" data-action="browseMap"><i class="fa-solid fa-folder-open"></i> Browse</button>
+            </div>
+            <input type="text" data-role="map-description" value="{{description}}" placeholder="Short description (optional)">
+          </div>
+          <button type="button" class="cc-icon-button danger" data-action="removeMap" title="Remove map"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      {{/each}}
+    </div>
+    {{#unless maps.length}}<p class="cc-helper-message">No campaign maps have been added yet.</p>{{/unless}}
+    <div class="cc-config-actions">
+      <button type="button" class="cc-primary-button" data-action="saveMaps"><i class="fa-solid fa-floppy-disk"></i> Save Maps</button>
     </div>
   </section>
 
@@ -79,7 +141,7 @@
       </label>
       <label class="cc-field cc-span-2">
         <span>Default Era / Age <small>(optional)</small></span>
-        <input type="text" name="default-era" value="{{config.defaultEra}}" placeholder="4th Age">
+        <input type="text" name="default-era" value="{{config.defaultEra}}" placeholder="DR">
       </label>
       <label class="cc-field cc-span-2">
         <span>Months</span>
