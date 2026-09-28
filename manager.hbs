@@ -1,0 +1,96 @@
+<section class="cc-app-content cc-manager-content">
+  <header class="cc-section-header">
+    <div>
+      <div class="cc-eyebrow">GM Controls</div>
+      <h2>{{config.name}}</h2>
+      <p class="cc-subtitle">Current date: <strong>{{currentLabel}}</strong></p>
+    </div>
+    <button type="button" class="cc-primary-button" data-action="newEvent">
+      <i class="fa-solid fa-plus"></i> Add Event
+    </button>
+  </header>
+
+  <section class="cc-panel">
+    <div class="cc-panel-title">
+      <h3><i class="fa-solid fa-calendar-day"></i> Current Date</h3>
+    </div>
+    <div class="cc-date-control-row">
+      <button type="button" class="cc-icon-button" data-action="previousDay" title="Previous day"><i class="fa-solid fa-minus"></i></button>
+      <select name="current-month">
+        {{#each months}}
+          <option value="{{index}}" {{#if selected}}selected{{/if}}>{{name}}</option>
+        {{/each}}
+      </select>
+      <input type="number" name="current-day" min="1" value="{{current.day}}" aria-label="Day">
+      <input type="number" name="current-year" value="{{current.year}}" aria-label="Year">
+      <input type="text" name="current-era" value="{{current.era}}" placeholder="Era / Age" aria-label="Era or Age">
+      <button type="button" class="cc-secondary-button" data-action="saveDate"><i class="fa-solid fa-check"></i> Set Date</button>
+      <button type="button" class="cc-icon-button" data-action="nextDay" title="Next day"><i class="fa-solid fa-plus"></i></button>
+    </div>
+  </section>
+
+  <section class="cc-panel cc-manager-events-panel">
+    <div class="cc-panel-title cc-panel-title-row">
+      <h3><i class="fa-solid fa-list"></i> Campaign Events</h3>
+      <label class="cc-search-box compact">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="search" data-role="event-search" placeholder="Search events...">
+      </label>
+    </div>
+
+    <div class="cc-manager-events">
+      {{#if events.length}}
+        {{#each events}}
+          <article class="cc-manager-event" data-event-search="{{searchText}}">
+            <button type="button" class="cc-event-open" data-action="openDay" data-date-key="{{dateKey}}">
+              <span class="cc-manager-event-title">
+                {{#if pinned}}<i class="fa-solid fa-thumbtack"></i>{{/if}}
+                <strong>{{title}}</strong>
+                <span class="cc-visibility-badge {{visibility}}">{{#if (eq visibility "gm")}}GM Only{{else}}Players{{/if}}</span>
+              </span>
+              <small>{{dateLabel}}</small>
+              {{#if bodyPreview}}<p>{{bodyPreview}}</p>{{/if}}
+            </button>
+            <div class="cc-event-actions">
+              <button type="button" class="cc-icon-button" data-action="editEvent" data-event-id="{{id}}" title="Edit"><i class="fa-solid fa-pen"></i></button>
+              <button type="button" class="cc-icon-button danger" data-action="deleteEvent" data-event-id="{{id}}" title="Delete"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </article>
+        {{/each}}
+      {{else}}
+        <div class="cc-empty-state compact"><p>No events have been created yet.</p></div>
+      {{/if}}
+    </div>
+  </section>
+
+  <section class="cc-panel">
+    <div class="cc-panel-title">
+      <h3><i class="fa-solid fa-sliders"></i> Calendar Configuration</h3>
+      <p>One month per line using <code>Month Name|Number of Days</code>.</p>
+    </div>
+    <div class="cc-form-grid">
+      <label class="cc-field">
+        <span>Calendar Name</span>
+        <input type="text" name="calendar-name" value="{{config.name}}">
+      </label>
+      <label class="cc-field">
+        <span>Year Label</span>
+        <input type="text" name="year-label" value="{{config.yearLabel}}">
+      </label>
+      <label class="cc-field cc-span-2">
+        <span>Default Era / Age <small>(optional)</small></span>
+        <input type="text" name="default-era" value="{{config.defaultEra}}" placeholder="4th Age">
+      </label>
+      <label class="cc-field cc-span-2">
+        <span>Months</span>
+        <textarea name="months" rows="8" spellcheck="false">{{monthsText}}</textarea>
+      </label>
+    </div>
+    <div class="cc-config-actions">
+      <button type="button" class="cc-primary-button" data-action="saveConfig"><i class="fa-solid fa-floppy-disk"></i> Save Configuration</button>
+      <button type="button" class="cc-secondary-button" data-action="exportConfig"><i class="fa-solid fa-file-export"></i> Export JSON</button>
+      <button type="button" class="cc-secondary-button" data-action="importConfig"><i class="fa-solid fa-file-import"></i> Import JSON</button>
+      <input type="file" data-role="config-file" accept="application/json,.json" hidden>
+    </div>
+  </section>
+</section>

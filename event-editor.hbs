@@ -1,0 +1,64 @@
+<section class="cc-app-content cc-event-editor-content">
+  <header class="cc-section-header">
+    <div>
+      <div class="cc-eyebrow">{{#if isEdit}}Edit Event{{else}}New Event{{/if}}</div>
+      <h2>{{#if isEdit}}{{event.title}}{{else}}Add a Campaign Event{{/if}}</h2>
+    </div>
+  </header>
+
+  <div class="cc-form-grid">
+    <label class="cc-field cc-span-2">
+      <span>Title</span>
+      <input type="text" name="title" value="{{event.title}}" required placeholder="The Broken Bridge">
+    </label>
+
+    <label class="cc-field">
+      <span>Month</span>
+      <select name="month">
+        {{#each months}}
+          <option value="{{index}}" {{#if selected}}selected{{/if}}>{{name}}</option>
+        {{/each}}
+      </select>
+    </label>
+
+    <label class="cc-field">
+      <span>Day</span>
+      <input type="number" name="day" min="1" value="{{date.day}}" required>
+    </label>
+
+    <label class="cc-field">
+      <span>Year</span>
+      <input type="number" name="year" value="{{date.year}}" required>
+    </label>
+
+    <label class="cc-field">
+      <span>Era / Age <small>(optional)</small></span>
+      <input type="text" name="era" value="{{date.era}}" placeholder="4th Age">
+    </label>
+
+    <label class="cc-field">
+      <span>Visibility</span>
+      <select name="visibility">
+        <option value="public" {{#if (eq event.visibility "public")}}selected{{/if}}>Visible to Players</option>
+        <option value="gm" {{#if (eq event.visibility "gm")}}selected{{/if}}>GM Only</option>
+      </select>
+    </label>
+
+    <label class="cc-check-field">
+      <input type="checkbox" name="pinned" {{#if event.pinned}}checked{{/if}}>
+      <span>Pin this event as important</span>
+    </label>
+  </div>
+
+  <div class="cc-field cc-editor-field">
+    <span>Event Details</span>
+    <prose-mirror name="body" value="{{event.body}}" placeholder="What happened on this day?" open></prose-mirror>
+  </div>
+
+  <footer class="cc-form-footer">
+    <button type="submit" class="cc-primary-button">
+      <i class="fa-solid fa-floppy-disk"></i>
+      {{#if isEdit}}Save Changes{{else}}Add Event{{/if}}
+    </button>
+  </footer>
+</section>

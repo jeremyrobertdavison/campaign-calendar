@@ -1,0 +1,30 @@
+<section class="cc-app-content cc-day-events-content">
+  <header class="cc-section-header">
+    <div>
+      <div class="cc-eyebrow">Campaign History</div>
+      <h2>{{dateLabel}}</h2>
+    </div>
+    <span class="cc-event-count">{{events.length}} event{{#unless (eq events.length 1)}}s{{/unless}}</span>
+  </header>
+
+  <div class="cc-day-event-list">
+    {{#if events.length}}
+      {{#each events}}
+        <article class="cc-event-card {{#if pinned}}is-pinned{{/if}}">
+          <div class="cc-event-card-header">
+            <h3>{{#if pinned}}<i class="fa-solid fa-thumbtack" title="Pinned"></i>{{/if}} {{title}}</h3>
+            {{#if ../isGM}}
+              <span class="cc-visibility-badge {{visibility}}">{{#if (eq visibility "gm")}}GM Only{{else}}Players{{/if}}</span>
+            {{/if}}
+          </div>
+          <div class="cc-event-body">{{{bodyHtml}}}</div>
+        </article>
+      {{/each}}
+    {{else}}
+      <div class="cc-empty-state">
+        <i class="fa-regular fa-calendar-xmark"></i>
+        <p>No visible events are recorded for this date.</p>
+      </div>
+    {{/if}}
+  </div>
+</section>
