@@ -7,6 +7,7 @@ GMs can control the date, define a custom calendar, record rich-text events for 
 ## Features
 
 - **Always-visible current date** in a compact top-screen display.
+- **Live date synchronization** so GM date changes immediately refresh the current-date display for connected players.
 - **GM date controls** for previous day, next day, or direct date entry.
 - **Custom calendars** with configurable month names and days per month.
 - **Optional eras/ages** such as `4th Age`, `Age of Adventure`, or any campaign-specific label.
@@ -16,7 +17,7 @@ GMs can control the date, define a custom calendar, record rich-text events for 
 - **Current-day event list** directly in the date dropdown, with one-click access to the full day record.
 - **Faction tracking** with GM-configured faction names and starting scores.
 - **Current faction standings** visible to players in the current-date dropdown.
-- **Historical faction standings** reconstructed for past dates from the event ledger.
+- **Historical faction standings** reconstructed for past dates from event changes and completed-quest faction rewards.
 - **Faction changes per event**, including visible gain/loss values such as `+2` or `-5`.
 - **XP per event**, including positive or negative adjustments.
 - **Item and equipment gains/losses per event**, with signed quantities.
@@ -34,8 +35,10 @@ GMs can control the date, define a custom calendar, record rich-text events for 
 - **Interactive map viewer** with mouse-wheel zoom, click-drag panning, Fit, and 100% controls.
 - **Key NPC Dossier** accessible from the date dropdown, with GM-curated names, portraits, and descriptions.
 - **Dossier search** so players can quickly find a known NPC.
-- **Quest Log** accessible from the date dropdown, with GM-managed title, quest giver, description, and reward fields.
-- **Quest search** so players can quickly find a quest by title, giver, description, or reward.
+- **Quest Log** accessible from the date dropdown, with GM-managed title, quest giver, description, reward, and Active/Completed status.
+- **Faction point quest rewards** that are visible while a quest is Active but do not change faction standings until the quest is marked Completed.
+- **Completion-date tracking** so quest faction rewards enter historical standings on the day the quest is completed.
+- **Quest search** so players can quickly find a quest by title, giver, description, reward, status, or faction reward.
 - **Raise Hand** button for players that opens an immediate GM-side alert identifying the player.
 
 ## Compatibility
@@ -72,6 +75,7 @@ Restart Foundry if necessary and enable the module in your world.
 ### Current Date
 
 The current campaign date appears at the top center of the Foundry interface. Clicking it opens a dropdown.
+When the GM advances, reverses, or directly sets the date, connected player clients refresh the displayed campaign date automatically without needing a browser reload.
 
 Players can:
 
@@ -112,7 +116,7 @@ Several events can exist on the same date.
 
 ### Factions and Historical Scores
 
-In the GM Manager, use the **Factions** panel to add a faction name and its starting score. Event records can then apply positive or negative changes to one or more factions.
+In the GM Manager, use the **Factions** panel to add a faction name and its starting score. Event records can apply positive or negative changes to one or more factions, and quests can define faction-point rewards that are applied only when the quest is completed.
 
 Campaign Calendar calculates faction standings from the ledger instead of overwriting history. This means:
 
@@ -120,7 +124,10 @@ Campaign Calendar calculates faction standings from the ledger instead of overwr
 - Opening a previous date shows the score as it stood at the end of that historical day.
 - Each event shows its own faction gain or loss.
 - Editing or moving an event automatically changes the derived historical scores.
-- GM-only event changes remain private: players only calculate faction standings from player-visible events, while GMs also see adjustments from GM-only events.
+- An Active quest can advertise faction-point rewards without changing the current score.
+- Marking a quest **Completed** stamps the current campaign date as its completion date and applies its faction rewards from that date forward.
+- Reverting the quest to **Active** removes those quest rewards from the standings again.
+- GM-only event changes remain private: players only calculate event-based faction standings from player-visible events, while GMs also see adjustments from GM-only events. Quest Log faction rewards are player-visible campaign data.
 
 Item/equipment changes are a campaign-history ledger; they do not directly add or remove Items from Actor sheets.
 
@@ -160,17 +167,21 @@ Players can then open **Dossier** at any time without changing scenes or affecti
 
 ### Quest Log
 
-The date dropdown includes a **Quest Log** button for both players and GMs. It opens a searchable campaign quest reference containing entries explicitly created by the GM. Each quest contains a **title**, **quest giver**, **description**, and **reward**.
+The date dropdown includes a **Quest Log** button for both players and GMs. It opens a searchable campaign quest reference containing entries explicitly created by the GM. Each quest contains a **title**, **quest giver**, **description**, **reward**, and **Active/Completed** status. A quest can also award positive or negative points to one or more configured factions.
 
 To add quests as a GM:
 
 1. Open **Manage** from the calendar dropdown.
 2. Find the **Quest Log** panel.
 3. Select **Add Quest**.
-4. Enter the quest title, quest giver, description, and reward.
-5. Select **Save Quest Log**.
+4. Enter the quest title, quest giver, description, and general reward.
+5. Leave the quest **Active** while it is still in progress.
+6. Use **Add Faction Reward** for any reputation points the quest will award on completion.
+7. Select **Save Quest Log**.
 
-Players can then open **Quest Log** whenever they want without changing scenes or affecting another player's interface. The search field matches the quest title, giver, description, and reward. Removing a quest from the manager removes it from the player-facing Quest Log after synchronization.
+Faction rewards are intentionally prospective while the quest is Active: players can see what the quest will award, but those points are **not** included in current faction standings. When the GM changes the quest to **Completed** and saves the Quest Log, Campaign Calendar records the current in-game date as the completion date and begins including those faction points in standings from that date onward. Historical dates before completion keep the old score.
+
+Players can open **Quest Log** whenever they want without changing scenes or affecting another player's interface. The search field matches the quest title, giver, description, reward, status, and faction rewards. Removing a quest from the manager removes it from the player-facing Quest Log after synchronization.
 
 ### Raise Hand
 
@@ -272,15 +283,15 @@ https://github.com/jeremyrobertdavison/campaign-calendar
 1. Create a **public** GitHub repository named `campaign-calendar` under `jeremyrobertdavison`.
 2. Upload the contents of this project so `module.json` is at the repository root.
 3. Commit and push the files to the `main` branch.
-4. Create a tag matching the module version, such as `v1.5.0`, and push it.
+4. Create a tag matching the module version, such as `v1.6.0`, and push it.
 5. The included GitHub Actions workflow will create a GitHub Release and attach `campaign-calendar.zip` automatically.
 6. Use the manifest URL shown above to install the module in Foundry.
 
-For later versions, update the `version` field in `module.json`, update `CHANGELOG.md`, commit the changes, and push a new version tag such as `v1.5.0`.
+For later versions, update the `version` field in `module.json`, update `CHANGELOG.md`, commit the changes, and push a new version tag such as `v1.6.0`.
 
 ## Data and Permissions
 
-The current date, calendar definition, faction definitions, campaign map definitions, campaign dossier definitions, quest-log entries, and player-visible events are stored in Foundry world settings. GM-only events are stored separately in a private Journal Entry owned only by the GM role, rather than being sent as part of the public event store. Only GMs can modify calendar data. Players receive read-only access to events marked **Visible to Players**. Player-facing faction standings are derived only from those visible events, preventing GM-only event adjustments from leaking through faction totals.
+The current date, calendar definition, faction definitions, campaign map definitions, campaign dossier definitions, quest-log entries, and player-visible events are stored in Foundry world settings. GM-only events are stored separately in a private Journal Entry owned only by the GM role, rather than being sent as part of the public event store. Only GMs can modify calendar data. Players receive read-only access to events marked **Visible to Players**. Player-facing faction standings are derived from player-visible events plus faction rewards from quests that have been marked Completed. Active quest rewards are never counted in standings. GM-only event adjustments therefore remain private, while Quest Log rewards remain visible campaign data.
 
 As with any module that stores campaign data, back up your Foundry user data before major upgrades.
 

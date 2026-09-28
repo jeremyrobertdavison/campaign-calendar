@@ -20,11 +20,18 @@
 
     <div class="cc-quest-log-list">
       {{#each quests}}
-        <article class="cc-quest-card" data-quest-search="{{searchText}}">
+        <article class="cc-quest-card {{#if completed}}is-completed{{/if}}" data-quest-search="{{searchText}}">
           <div class="cc-quest-card-header">
             <div>
-              <h3>{{title}}</h3>
+              <div class="cc-quest-title-row">
+                <h3>{{title}}</h3>
+                <span class="cc-quest-status-badge {{#if completed}}completed{{else}}active{{/if}}">
+                  {{#if completed}}<i class="fa-solid fa-circle-check"></i>{{else}}<i class="fa-solid fa-hourglass-half"></i>{{/if}}
+                  {{statusLabel}}
+                </span>
+              </div>
               {{#if questGiver}}<div class="cc-quest-giver"><i class="fa-solid fa-user"></i> <strong>Quest Giver:</strong> {{questGiver}}</div>{{/if}}
+              {{#if completionLabel}}<div class="cc-quest-completed-date"><i class="fa-solid fa-calendar-check"></i> Completed {{completionLabel}}</div>{{/if}}
             </div>
           </div>
           <div class="cc-quest-card-body">
@@ -34,7 +41,26 @@
             </div>
             <div class="cc-quest-section cc-quest-reward">
               <h4><i class="fa-solid fa-gift"></i> Reward</h4>
-              {{#if reward}}<p>{{reward}}</p>{{else}}<p class="cc-quest-empty-field">No reward has been recorded.</p>{{/if}}
+              {{#if reward}}<p>{{reward}}</p>{{else}}<p class="cc-quest-empty-field">No general reward has been recorded.</p>{{/if}}
+
+              {{#if hasFactionRewards}}
+                <div class="cc-quest-faction-reward-display">
+                  <strong>Faction Points</strong>
+                  <div class="cc-quest-faction-reward-items">
+                    {{#each factionRewards}}
+                      <div class="cc-quest-faction-reward-item">
+                        <span>{{name}}</span>
+                        <strong>{{deltaLabel}}</strong>
+                      </div>
+                    {{/each}}
+                  </div>
+                  {{#if ../completed}}
+                    <small><i class="fa-solid fa-check"></i> Applied to faction standings.</small>
+                  {{else}}
+                    <small><i class="fa-solid fa-clock"></i> Awarded when this quest is completed.</small>
+                  {{/if}}
+                </div>
+              {{/if}}
             </div>
           </div>
         </article>

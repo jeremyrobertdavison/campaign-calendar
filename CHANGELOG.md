@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.6.1 — Live Client Date Synchronization
+
+- Fixed the current campaign date not refreshing automatically on connected player screens when the GM advances, reverses, or directly changes the date.
+- Enabled Foundry's module socket namespace in the package manifest so Campaign Calendar synchronization packets are relayed between connected clients.
+- Added world-setting change listeners as a second synchronization path, so the top date display refreshes when Foundry propagates updated calendar, event, faction, map, dossier, or quest data.
+- Existing v1.6.0 world data remains fully compatible.
+
+## 1.6.0 — Quest Completion & Deferred Faction Rewards
+
+- Added **Active** and **Completed** quest states.
+- Added structured faction-point rewards to Quest Log entries.
+- Fixed quest faction rewards affecting faction standings before the quest is completed.
+- Active quests now display their faction rewards as prospective rewards without changing current or historical standings.
+- Marking a quest Completed stamps the current campaign date and applies the faction reward beginning on that date.
+- Historical faction standings before the completion date remain unchanged.
+- Reverting a completed quest to Active removes its faction reward from faction standings.
+- Added completion status and completion date to the player-facing Quest Log.
+- Existing v1.5.0 quests remain compatible and default to Active unless they already contain a recognized completed flag.
+
 ## 1.5.0 — Quest Log
 
 - Added a **Quest Log** button beside Maps and Dossier in the calendar dropdown.

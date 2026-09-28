@@ -34,6 +34,10 @@ import { MapViewerApplication } from "./applications/map-viewer.mjs";
 import { DossierApplication } from "./applications/dossier.mjs";
 import { QuestLogApplication } from "./applications/quest-log.mjs";
 
+function broadcastSettingRefresh(reason) {
+  Hooks.callAll("campaignCalendarUpdated", { type: "setting", reason });
+}
+
 function showRaisedHandDialog(payload) {
   const playerName = String(payload?.playerName ?? "Unknown");
   const content = document.createElement("div");
@@ -73,7 +77,8 @@ Hooks.once("init", () => {
     scope: "world",
     config: false,
     type: Object,
-    default: DEFAULT_CONFIG
+    default: DEFAULT_CONFIG,
+    onChange: () => broadcastSettingRefresh("config")
   });
 
   game.settings.register(MODULE_ID, "currentDate", {
@@ -81,7 +86,8 @@ Hooks.once("init", () => {
     scope: "world",
     config: false,
     type: Object,
-    default: DEFAULT_DATE
+    default: DEFAULT_DATE,
+    onChange: () => broadcastSettingRefresh("date")
   });
 
   game.settings.register(MODULE_ID, "events", {
@@ -89,7 +95,8 @@ Hooks.once("init", () => {
     scope: "world",
     config: false,
     type: Object,
-    default: DEFAULT_EVENTS
+    default: DEFAULT_EVENTS,
+    onChange: () => broadcastSettingRefresh("events")
   });
 
   game.settings.register(MODULE_ID, "factions", {
@@ -97,7 +104,8 @@ Hooks.once("init", () => {
     scope: "world",
     config: false,
     type: Object,
-    default: DEFAULT_FACTIONS
+    default: DEFAULT_FACTIONS,
+    onChange: () => broadcastSettingRefresh("factions")
   });
 
   game.settings.register(MODULE_ID, "maps", {
@@ -105,7 +113,8 @@ Hooks.once("init", () => {
     scope: "world",
     config: false,
     type: Object,
-    default: DEFAULT_MAPS
+    default: DEFAULT_MAPS,
+    onChange: () => broadcastSettingRefresh("maps")
   });
 
   game.settings.register(MODULE_ID, "dossiers", {
@@ -113,7 +122,8 @@ Hooks.once("init", () => {
     scope: "world",
     config: false,
     type: Object,
-    default: DEFAULT_DOSSIERS
+    default: DEFAULT_DOSSIERS,
+    onChange: () => broadcastSettingRefresh("dossiers")
   });
 
   game.settings.register(MODULE_ID, "quests", {
@@ -121,7 +131,8 @@ Hooks.once("init", () => {
     scope: "world",
     config: false,
     type: Object,
-    default: DEFAULT_QUESTS
+    default: DEFAULT_QUESTS,
+    onChange: () => broadcastSettingRefresh("quests")
   });
 });
 

@@ -131,7 +131,7 @@
     <div class="cc-panel-title cc-panel-title-row">
       <div>
         <h3><i class="fa-solid fa-scroll"></i> Quest Log</h3>
-        <p>Add quests that players can review from the calendar dropdown. Each entry includes a title, quest giver, description, and reward.</p>
+        <p>Add quests that players can review from the calendar dropdown. Faction point rewards are shown while a quest is active, but only affect faction standings once the quest is completed.</p>
       </div>
       <div class="cc-manager-quest-actions">
         <button type="button" class="cc-secondary-button" data-action="openQuestLog"><i class="fa-solid fa-scroll"></i> Open Quest Log</button>
@@ -145,8 +145,36 @@
           <div class="cc-quest-edit-fields">
             <input type="text" data-role="quest-title" value="{{title}}" placeholder="Quest title">
             <input type="text" data-role="quest-giver" value="{{questGiver}}" placeholder="Quest giver">
+            <label class="cc-quest-status-field">
+              <span>Status</span>
+              <select data-role="quest-status">
+                <option value="active" {{#if (eq status "active")}}selected{{/if}}>Active</option>
+                <option value="completed" {{#if (eq status "completed")}}selected{{/if}}>Completed</option>
+              </select>
+            </label>
             <textarea data-role="quest-description" rows="4" placeholder="Quest description">{{description}}</textarea>
             <textarea data-role="quest-reward" rows="2" placeholder="Reward">{{reward}}</textarea>
+
+            <div class="cc-quest-faction-rewards">
+              <div class="cc-quest-faction-rewards-header">
+                <div>
+                  <strong>Faction Point Rewards</strong>
+                  <small>Displayed to players now; added to standings only when this quest is Completed.</small>
+                </div>
+                <button type="button" class="cc-secondary-button" data-action="addQuestFactionReward"><i class="fa-solid fa-plus"></i> Add Faction Reward</button>
+              </div>
+              <div class="cc-quest-faction-reward-list" data-role="quest-faction-reward-list">
+                {{#each factionRewardRows}}
+                  <div class="cc-quest-faction-reward-row" data-quest-faction-reward-row>
+                    <select data-role="quest-faction-id">
+                      {{#each options}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}
+                    </select>
+                    <input type="number" step="1" value="{{delta}}" data-role="quest-faction-delta" title="Faction points awarded on completion">
+                    <button type="button" class="cc-icon-button danger" data-action="removeQuestFactionReward" title="Remove faction reward"><i class="fa-solid fa-trash"></i></button>
+                  </div>
+                {{/each}}
+              </div>
+            </div>
           </div>
           <button type="button" class="cc-icon-button danger" data-action="removeQuest" title="Remove quest"><i class="fa-solid fa-trash"></i></button>
         </div>

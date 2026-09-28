@@ -1,8 +1,8 @@
 {
   "id": "campaign-calendar",
   "title": "Campaign Calendar",
-  "description": "A system-agnostic in-game calendar and campaign history for Foundry VTT with date controls, event notes, faction reputation tracking, XP, item/equipment changes, GM-curated maps, NPC dossiers, a quest log, and player raise-hand alerts.",
-  "version": "1.5.0",
+  "description": "A system-agnostic in-game calendar and campaign history for Foundry VTT with date controls, event notes, faction reputation tracking, XP, item/equipment changes, maps, NPC dossiers, quest tracking with deferred faction rewards, and player raise-hand alerts.",
+  "version": "1.6.1",
   "authors": [
     {
       "name": "Jeremy Davison",
@@ -30,5 +30,6 @@
   "manifest": "https://raw.githubusercontent.com/jeremyrobertdavison/campaign-calendar/main/module.json",
   "download": "https://github.com/jeremyrobertdavison/campaign-calendar/releases/latest/download/campaign-calendar.zip",
   "license": "LICENSE",
-  "readme": "README.md"
+  "readme": "README.md",
+  "socket": true
 }

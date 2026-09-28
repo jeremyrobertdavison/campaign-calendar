@@ -31,9 +31,27 @@ export function getDossiers() {
   return clone(Array.isArray(stored?.items) ? stored.items : []);
 }
 
+function normalizeStoredQuest(quest = {}) {
+  const legacyComplete = quest.complete === true || quest.completed === true || quest.isComplete === true;
+  const status = quest.status === "completed" || legacyComplete ? "completed" : "active";
+  const completionDate = status === "completed" && quest.completionDate
+    ? normalizeDate(quest.completionDate)
+    : null;
+  const factionRewards = Array.isArray(quest.factionRewards)
+    ? quest.factionRewards.map((reward) => ({
+        factionId: String(reward.factionId ?? "").trim(),
+        factionName: String(reward.factionName ?? "").trim(),
+        delta: Number.parseInt(reward.delta ?? 0, 10) || 0
+      })).filter((reward) => reward.factionId && reward.delta !== 0)
+    : [];
+
+  return { ...quest, status, completionDate, factionRewards };
+}
+
 export function getQuests() {
   const stored = game.settings.get(MODULE_ID, "quests") ?? DEFAULT_QUESTS;
-  return clone(Array.isArray(stored?.items) ? stored.items : []);
+  const items = Array.isArray(stored?.items) ? stored.items : [];
+  return clone(items.map(normalizeStoredQuest));
 }
 
 let privateJournal = null;
@@ -307,20 +325,51 @@ export async function setDossiers(dossiers) {
   return items;
 }
 
+function normalizeQuestFactionRewards(rewards = []) {
+  const factions = getFactions();
+  const byId = new Map(factions.map((faction) => [faction.id, faction]));
+  return (Array.isArray(rewards) ? rewards : []).map((reward) => {
+    const factionId = String(reward.factionId ?? "").trim();
+    const faction = byId.get(factionId);
+    return {
+      factionId,
+      factionName: String(faction?.name ?? reward.factionName ?? "Unknown Faction").trim() || "Unknown Faction",
+      delta: Number.parseInt(reward.delta ?? 0, 10) || 0
+    };
+  }).filter((reward) => reward.factionId && reward.delta !== 0);
+}
+
 export async function setQuests(quests) {
   requireGM();
   const seen = new Set();
   const now = Date.now();
+  const currentDate = getCurrentDate();
+  const existingById = new Map(getQuests().map((quest) => [quest.id, quest]));
+
   const items = (quests ?? []).map((quest, index) => {
     let id = String(quest.id ?? "").trim() || randomId();
     while (seen.has(id)) id = randomId();
     seen.add(id);
+
+    const prior = existingById.get(id);
+    const legacyComplete = quest.complete === true || quest.completed === true || quest.isComplete === true;
+    const status = quest.status === "completed" || legacyComplete ? "completed" : "active";
+    let completionDate = null;
+    if (status === "completed") {
+      if (quest.completionDate) completionDate = normalizeDate(quest.completionDate);
+      else if (prior?.status === "completed" && prior.completionDate) completionDate = normalizeDate(prior.completionDate);
+      else completionDate = normalizeDate(currentDate);
+    }
+
     return {
       id,
       title: String(quest.title ?? "").trim(),
       questGiver: String(quest.questGiver ?? "").trim(),
       description: String(quest.description ?? "").trim(),
       reward: String(quest.reward ?? "").trim(),
+      status,
+      completionDate,
+      factionRewards: normalizeQuestFactionRewards(quest.factionRewards),
       sort: Number.isFinite(Number(quest.sort)) ? Number(quest.sort) : index,
       addedAt: Number(quest.addedAt) || now
     };
@@ -467,6 +516,18 @@ export function getFactionStandings(date = getCurrentDate()) {
     for (const change of (event.factionChanges ?? [])) {
       if (!scores.has(change.factionId)) continue;
       scores.set(change.factionId, scores.get(change.factionId) + (Number(change.delta) || 0));
+    }
+  }
+
+  // Quest faction rewards are prospective while a quest is Active. They only
+  // become part of faction standings once the quest is marked Completed. The
+  // completion date makes historical standings remain accurate as well.
+  for (const quest of getQuests()) {
+    if (quest.status !== "completed" || !quest.completionDate) continue;
+    if (compareDatesAscending(quest.completionDate, target) > 0) continue;
+    for (const reward of (quest.factionRewards ?? [])) {
+      if (!scores.has(reward.factionId)) continue;
+      scores.set(reward.factionId, scores.get(reward.factionId) + (Number(reward.delta) || 0));
     }
   }
 

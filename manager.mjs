@@ -70,6 +70,8 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
       openDossier: CalendarManagerApplication.openDossier,
       addQuest: CalendarManagerApplication.addQuest,
       removeQuest: CalendarManagerApplication.removeQuest,
+      addQuestFactionReward: CalendarManagerApplication.addQuestFactionReward,
+      removeQuestFactionReward: CalendarManagerApplication.removeQuestFactionReward,
       saveQuests: CalendarManagerApplication.saveQuests,
       openQuestLog: CalendarManagerApplication.openQuestLog,
       saveConfig: CalendarManagerApplication.saveConfig,
@@ -104,7 +106,25 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
     const factions = getFactions();
     const maps = getMaps();
     const dossiers = getDossiers();
-    const quests = getQuests();
+    const quests = getQuests().map((quest) => ({
+      ...quest,
+      status: quest.status === "completed" ? "completed" : "active",
+      factionRewardRows: (quest.factionRewards ?? []).map((reward) => {
+        const missing = !factions.some((faction) => faction.id === reward.factionId);
+        const options = factions.map((faction) => ({
+          ...faction,
+          selected: faction.id === reward.factionId
+        }));
+        if (missing && reward.factionId) {
+          options.unshift({
+            id: reward.factionId,
+            name: `${reward.factionName ?? "Removed Faction"} (removed)`,
+            selected: true
+          });
+        }
+        return { ...reward, options };
+      })
+    }));
     const factionNames = new Map(factions.map((faction) => [faction.id, faction.name]));
     const events = getAllEvents()
       .sort((a, b) => {
@@ -429,6 +449,56 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
     new DossierApplication().render({ force: true });
   }
 
+  static _createQuestFactionRewardRow(selectedFactionId = "", delta = 0, fallbackName = "") {
+    const factions = getFactions();
+    if (!factions.length) {
+      ui.notifications.warn("Add at least one faction before adding a faction reward.");
+      return null;
+    }
+
+    const row = document.createElement("div");
+    row.className = "cc-quest-faction-reward-row";
+    row.dataset.questFactionRewardRow = "";
+
+    const select = document.createElement("select");
+    select.dataset.role = "quest-faction-id";
+    let found = false;
+    for (const faction of factions) {
+      const option = document.createElement("option");
+      option.value = faction.id;
+      option.textContent = faction.name;
+      if (faction.id === selectedFactionId) {
+        option.selected = true;
+        found = true;
+      }
+      select.append(option);
+    }
+    if (selectedFactionId && !found) {
+      const option = document.createElement("option");
+      option.value = selectedFactionId;
+      option.textContent = `${fallbackName || "Removed Faction"} (removed)`;
+      option.selected = true;
+      select.prepend(option);
+    }
+
+    const points = document.createElement("input");
+    points.type = "number";
+    points.step = "1";
+    points.value = String(Number(delta) || 0);
+    points.dataset.role = "quest-faction-delta";
+    points.title = "Faction points awarded when the quest is completed";
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "cc-icon-button danger";
+    remove.dataset.action = "removeQuestFactionReward";
+    remove.title = "Remove faction reward";
+    remove.innerHTML = '<i class="fa-solid fa-trash"></i>';
+
+    row.append(select, points, remove);
+    return row;
+  }
+
   static addQuest() {
     const list = this.element.querySelector('[data-role="quest-list"]');
     if (!list) return;
@@ -441,8 +511,25 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
       <div class="cc-quest-edit-fields">
         <input type="text" data-role="quest-title" placeholder="Quest title">
         <input type="text" data-role="quest-giver" placeholder="Quest giver">
+        <label class="cc-quest-status-field">
+          <span>Status</span>
+          <select data-role="quest-status">
+            <option value="active" selected>Active</option>
+            <option value="completed">Completed</option>
+          </select>
+        </label>
         <textarea data-role="quest-description" rows="4" placeholder="Quest description"></textarea>
         <textarea data-role="quest-reward" rows="2" placeholder="Reward"></textarea>
+        <div class="cc-quest-faction-rewards">
+          <div class="cc-quest-faction-rewards-header">
+            <div>
+              <strong>Faction Point Rewards</strong>
+              <small>These points affect standings only after the quest is marked Completed.</small>
+            </div>
+            <button type="button" class="cc-secondary-button" data-action="addQuestFactionReward"><i class="fa-solid fa-plus"></i> Add Faction Reward</button>
+          </div>
+          <div class="cc-quest-faction-reward-list" data-role="quest-faction-reward-list"></div>
+        </div>
       </div>
       <button type="button" class="cc-icon-button danger" data-action="removeQuest" title="Remove quest"><i class="fa-solid fa-trash"></i></button>
     `;
@@ -454,6 +541,18 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
     target.closest(".cc-quest-edit-row")?.remove();
   }
 
+  static addQuestFactionReward(event, target) {
+    const questRow = target.closest(".cc-quest-edit-row");
+    const list = questRow?.querySelector('[data-role="quest-faction-reward-list"]');
+    if (!list) return;
+    const row = this._createQuestFactionRewardRow();
+    if (row) list.append(row);
+  }
+
+  static removeQuestFactionReward(event, target) {
+    target.closest("[data-quest-faction-reward-row]")?.remove();
+  }
+
   static async saveQuests() {
     const rows = [...this.element.querySelectorAll(".cc-quest-edit-row")];
     const quests = rows.map((row, index) => ({
@@ -462,6 +561,15 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
       questGiver: row.querySelector('[data-role="quest-giver"]')?.value ?? "",
       description: row.querySelector('[data-role="quest-description"]')?.value ?? "",
       reward: row.querySelector('[data-role="quest-reward"]')?.value ?? "",
+      status: row.querySelector('[data-role="quest-status"]')?.value === "completed" ? "completed" : "active",
+      factionRewards: [...row.querySelectorAll("[data-quest-faction-reward-row]")].map((rewardRow) => {
+        const select = rewardRow.querySelector('[data-role="quest-faction-id"]');
+        return {
+          factionId: select?.value ?? "",
+          factionName: select?.selectedOptions?.[0]?.textContent?.replace(/ \(removed\)$/, "") ?? "",
+          delta: Number(rewardRow.querySelector('[data-role="quest-faction-delta"]')?.value ?? 0)
+        };
+      }),
       addedAt: Number(row.dataset.addedAt) || Date.now(),
       sort: index
     }));
