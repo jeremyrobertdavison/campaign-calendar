@@ -31,3 +31,5 @@ export const DEFAULT_DATE = {
 export const DEFAULT_EVENTS = { items: [] };
 export const DEFAULT_FACTIONS = { items: [] };
 export const DEFAULT_MAPS = { items: [] };
+export const DEFAULT_DOSSIERS = { items: [] };
+export const DEFAULT_QUESTS = { items: [] };

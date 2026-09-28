@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG, DEFAULT_DATE, DEFAULT_EVENTS, DEFAULT_FACTIONS, DEFAULT_MAPS, MODULE_ID, SOCKET_NAME } from "./constants.mjs";
+import { DEFAULT_CONFIG, DEFAULT_DATE, DEFAULT_DOSSIERS, DEFAULT_EVENTS, DEFAULT_FACTIONS, DEFAULT_MAPS, DEFAULT_QUESTS, MODULE_ID, SOCKET_NAME } from "./constants.mjs";
 
 function clone(value) {
   return foundry.utils.deepClone(value);
@@ -23,6 +23,16 @@ export function getFactions() {
 
 export function getMaps() {
   const stored = game.settings.get(MODULE_ID, "maps") ?? DEFAULT_MAPS;
+  return clone(Array.isArray(stored?.items) ? stored.items : []);
+}
+
+export function getDossiers() {
+  const stored = game.settings.get(MODULE_ID, "dossiers") ?? DEFAULT_DOSSIERS;
+  return clone(Array.isArray(stored?.items) ? stored.items : []);
+}
+
+export function getQuests() {
+  const stored = game.settings.get(MODULE_ID, "quests") ?? DEFAULT_QUESTS;
   return clone(Array.isArray(stored?.items) ? stored.items : []);
 }
 
@@ -271,6 +281,53 @@ export async function setMaps(maps) {
 
   await game.settings.set(MODULE_ID, "maps", { items });
   await emitSync("maps");
+  return items;
+}
+
+export async function setDossiers(dossiers) {
+  requireGM();
+  const seen = new Set();
+  const now = Date.now();
+  const items = (dossiers ?? []).map((dossier, index) => {
+    let id = String(dossier.id ?? "").trim() || randomId();
+    while (seen.has(id)) id = randomId();
+    seen.add(id);
+    return {
+      id,
+      name: String(dossier.name ?? "").trim(),
+      path: String(dossier.path ?? "").trim(),
+      description: String(dossier.description ?? "").trim(),
+      sort: Number.isFinite(Number(dossier.sort)) ? Number(dossier.sort) : index,
+      addedAt: Number(dossier.addedAt) || now
+    };
+  }).filter((dossier) => dossier.name && dossier.path);
+
+  await game.settings.set(MODULE_ID, "dossiers", { items });
+  await emitSync("dossiers");
+  return items;
+}
+
+export async function setQuests(quests) {
+  requireGM();
+  const seen = new Set();
+  const now = Date.now();
+  const items = (quests ?? []).map((quest, index) => {
+    let id = String(quest.id ?? "").trim() || randomId();
+    while (seen.has(id)) id = randomId();
+    seen.add(id);
+    return {
+      id,
+      title: String(quest.title ?? "").trim(),
+      questGiver: String(quest.questGiver ?? "").trim(),
+      description: String(quest.description ?? "").trim(),
+      reward: String(quest.reward ?? "").trim(),
+      sort: Number.isFinite(Number(quest.sort)) ? Number(quest.sort) : index,
+      addedAt: Number(quest.addedAt) || now
+    };
+  }).filter((quest) => quest.title);
+
+  await game.settings.set(MODULE_ID, "quests", { items });
+  await emitSync("quests");
   return items;
 }
 

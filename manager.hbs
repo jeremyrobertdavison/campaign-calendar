@@ -91,6 +91,73 @@
     </div>
   </section>
 
+  <section class="cc-panel">
+    <div class="cc-panel-title cc-panel-title-row">
+      <div>
+        <h3><i class="fa-solid fa-address-book"></i> Campaign Dossier</h3>
+        <p>Add key NPCs that players can reference from the calendar dropdown. Only NPCs saved here appear in the Dossier.</p>
+      </div>
+      <div class="cc-manager-dossier-actions">
+        <button type="button" class="cc-secondary-button" data-action="openDossier"><i class="fa-solid fa-address-book"></i> Open Dossier</button>
+        <button type="button" class="cc-secondary-button" data-action="addDossier"><i class="fa-solid fa-plus"></i> Add NPC</button>
+      </div>
+    </div>
+
+    <div class="cc-dossier-edit-list" data-role="dossier-list">
+      {{#each dossiers}}
+        <div class="cc-dossier-edit-row" data-dossier-id="{{id}}" data-added-at="{{addedAt}}">
+          <div class="cc-dossier-edit-preview" data-role="dossier-preview-wrap">
+            <img data-role="dossier-preview" src="{{path}}" alt="{{name}}">
+          </div>
+          <div class="cc-dossier-edit-fields">
+            <input type="text" data-role="dossier-name" value="{{name}}" placeholder="NPC name">
+            <div class="cc-dossier-path-row">
+              <input type="text" data-role="dossier-path" value="{{path}}" placeholder="path/to/npc.webp">
+              <button type="button" class="cc-secondary-button" data-action="browseDossier"><i class="fa-solid fa-folder-open"></i> Browse</button>
+            </div>
+            <textarea data-role="dossier-description" rows="3" placeholder="NPC description">{{description}}</textarea>
+          </div>
+          <button type="button" class="cc-icon-button danger" data-action="removeDossier" title="Remove NPC"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      {{/each}}
+    </div>
+    {{#unless dossiers.length}}<p class="cc-helper-message">No key NPCs have been added to the dossier yet.</p>{{/unless}}
+    <div class="cc-config-actions">
+      <button type="button" class="cc-primary-button" data-action="saveDossiers"><i class="fa-solid fa-floppy-disk"></i> Save Dossier</button>
+    </div>
+  </section>
+
+  <section class="cc-panel">
+    <div class="cc-panel-title cc-panel-title-row">
+      <div>
+        <h3><i class="fa-solid fa-scroll"></i> Quest Log</h3>
+        <p>Add quests that players can review from the calendar dropdown. Each entry includes a title, quest giver, description, and reward.</p>
+      </div>
+      <div class="cc-manager-quest-actions">
+        <button type="button" class="cc-secondary-button" data-action="openQuestLog"><i class="fa-solid fa-scroll"></i> Open Quest Log</button>
+        <button type="button" class="cc-secondary-button" data-action="addQuest"><i class="fa-solid fa-plus"></i> Add Quest</button>
+      </div>
+    </div>
+
+    <div class="cc-quest-edit-list" data-role="quest-list">
+      {{#each quests}}
+        <div class="cc-quest-edit-row" data-quest-id="{{id}}" data-added-at="{{addedAt}}">
+          <div class="cc-quest-edit-fields">
+            <input type="text" data-role="quest-title" value="{{title}}" placeholder="Quest title">
+            <input type="text" data-role="quest-giver" value="{{questGiver}}" placeholder="Quest giver">
+            <textarea data-role="quest-description" rows="4" placeholder="Quest description">{{description}}</textarea>
+            <textarea data-role="quest-reward" rows="2" placeholder="Reward">{{reward}}</textarea>
+          </div>
+          <button type="button" class="cc-icon-button danger" data-action="removeQuest" title="Remove quest"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      {{/each}}
+    </div>
+    {{#unless quests.length}}<p class="cc-helper-message">No quests have been added to the quest log yet.</p>{{/unless}}
+    <div class="cc-config-actions">
+      <button type="button" class="cc-primary-button" data-action="saveQuests"><i class="fa-solid fa-floppy-disk"></i> Save Quest Log</button>
+    </div>
+  </section>
+
   <section class="cc-panel cc-manager-events-panel">
     <div class="cc-panel-title cc-panel-title-row">
       <h3><i class="fa-solid fa-list"></i> Campaign Events</h3>

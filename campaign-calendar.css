@@ -512,3 +512,214 @@
   flex: 0 0 auto;
   font-size: 2rem;
 }
+
+
+/* v1.4.0 — campaign NPC dossier */
+.cc-dossier-button { margin-top: 6px; }
+
+.cc-manager-dossier-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.cc-dossier-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  max-height: 420px;
+  overflow: auto;
+}
+
+.cc-dossier-edit-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) 38px;
+  gap: 10px;
+  align-items: start;
+  padding: 9px;
+  border: 1px solid var(--color-border-light-tertiary, rgba(0,0,0,.2));
+  border-radius: 8px;
+  background: rgba(127,127,127,.04);
+}
+
+.cc-dossier-edit-preview {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 112px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-light-tertiary, rgba(0,0,0,.18));
+  border-radius: 7px;
+  background: rgba(127,127,127,.08);
+}
+
+.cc-dossier-edit-preview img { width: 100%; height: 100%; object-fit: cover; }
+.cc-dossier-edit-preview > i { display: none; opacity: .5; font-size: 1.7em; }
+.cc-dossier-edit-preview-empty > i { display: inline-block; }
+
+.cc-dossier-edit-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.cc-dossier-edit-fields textarea { resize: vertical; min-height: 66px; }
+
+.cc-dossier-path-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+}
+
+.cc-dossier-content { display: flex; flex-direction: column; }
+.cc-dossier-header { flex: 0 0 auto; }
+.cc-dossier-search-box { flex: 0 0 auto; }
+
+.cc-dossier-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 3px;
+}
+
+.cc-dossier-card {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  min-width: 0;
+  min-height: 190px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-light-tertiary, rgba(0,0,0,.2));
+  border-radius: 10px;
+  background: rgba(127,127,127,.05);
+}
+
+.cc-dossier-card-portrait {
+  min-height: 190px;
+  overflow: hidden;
+  background: rgba(0,0,0,.15);
+}
+
+.cc-dossier-card-portrait img { width: 100%; height: 100%; object-fit: cover; }
+
+.cc-dossier-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 13px;
+}
+
+.cc-dossier-card-body h3 { margin: 0; }
+.cc-dossier-card-body p { margin: 0; line-height: 1.45; white-space: pre-wrap; }
+.cc-dossier-no-description { opacity: .6; font-style: italic; }
+.cc-dossier-empty-state { height: 100%; }
+
+@media (max-width: 900px) {
+  .cc-dossier-grid { grid-template-columns: 1fr; }
+  .cc-dossier-edit-row { grid-template-columns: 78px minmax(0, 1fr) 38px; }
+  .cc-dossier-edit-preview { width: 78px; height: 96px; }
+}
+
+@media (max-width: 580px) {
+  .cc-dossier-card { grid-template-columns: 110px minmax(0, 1fr); }
+}
+
+
+/* v1.5.0 — campaign quest log */
+.cc-quest-log-button { margin-top: 6px; }
+
+.cc-manager-quest-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.cc-quest-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  max-height: 480px;
+  overflow: auto;
+}
+
+.cc-quest-edit-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 38px;
+  gap: 10px;
+  align-items: start;
+  padding: 10px;
+  border: 1px solid var(--color-border-light-tertiary, rgba(0,0,0,.2));
+  border-radius: 8px;
+  background: rgba(127,127,127,.04);
+}
+
+.cc-quest-edit-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cc-quest-edit-fields textarea {
+  grid-column: 1 / -1;
+  resize: vertical;
+  min-height: 58px;
+}
+
+.cc-quest-log-content { display: flex; flex-direction: column; }
+.cc-quest-log-header, .cc-quest-search-box { flex: 0 0 auto; }
+
+.cc-quest-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 3px;
+}
+
+.cc-quest-card {
+  overflow: hidden;
+  border: 1px solid var(--color-border-light-tertiary, rgba(0,0,0,.2));
+  border-radius: 10px;
+  background: rgba(127,127,127,.05);
+}
+
+.cc-quest-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 14px 10px;
+  border-bottom: 1px solid var(--color-border-light-tertiary, rgba(0,0,0,.14));
+}
+
+.cc-quest-card-header h3 { margin: 0 0 5px; font-size: 1.18em; }
+.cc-quest-giver { opacity: .76; font-size: .9em; }
+
+.cc-quest-card-body {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr);
+  gap: 16px;
+  padding: 13px 14px 15px;
+}
+
+.cc-quest-section h4 { margin: 0 0 6px; font-size: .88em; text-transform: uppercase; letter-spacing: .04em; opacity: .72; }
+.cc-quest-section p { margin: 0; line-height: 1.5; white-space: pre-wrap; }
+.cc-quest-reward { padding-left: 15px; border-left: 1px solid var(--color-border-light-tertiary, rgba(0,0,0,.14)); }
+.cc-quest-empty-field { opacity: .55; font-style: italic; }
+.cc-quest-log-empty-state { height: 100%; }
+
+@media (max-width: 700px) {
+  .cc-quest-edit-fields { grid-template-columns: 1fr; }
+  .cc-quest-edit-fields textarea { grid-column: auto; }
+  .cc-quest-card-body { grid-template-columns: 1fr; }
+  .cc-quest-reward { padding-left: 0; padding-top: 12px; border-left: 0; border-top: 1px solid var(--color-border-light-tertiary, rgba(0,0,0,.14)); }
+}

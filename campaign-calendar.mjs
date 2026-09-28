@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG, DEFAULT_DATE, DEFAULT_EVENTS, DEFAULT_FACTIONS, DEFAULT_MAPS, MODULE_ID, SOCKET_NAME } from "./constants.mjs";
+import { DEFAULT_CONFIG, DEFAULT_DATE, DEFAULT_DOSSIERS, DEFAULT_EVENTS, DEFAULT_FACTIONS, DEFAULT_MAPS, DEFAULT_QUESTS, MODULE_ID, SOCKET_NAME } from "./constants.mjs";
 import {
   advanceCurrentDate,
   createEvent,
@@ -8,17 +8,21 @@ import {
   getConfig,
   getCurrentDate,
   getDateGroups,
+  getDossiers,
   getEventsForDate,
   getFactions,
   getFactionStandings,
   getMaps,
+  getQuests,
   initializePrivateStorage,
   reloadPrivateEvents,
   raiseHand,
   setCalendarConfig,
   setCurrentDate,
+  setDossiers,
   setFactions,
   setMaps,
+  setQuests,
   updateEvent
 } from "./calendar-service.mjs";
 import { CalendarTopBar } from "./topbar.mjs";
@@ -27,6 +31,8 @@ import { CalendarManagerApplication } from "./applications/manager.mjs";
 import { DayEventsApplication } from "./applications/day-events.mjs";
 import { MapExplorerApplication } from "./applications/map-explorer.mjs";
 import { MapViewerApplication } from "./applications/map-viewer.mjs";
+import { DossierApplication } from "./applications/dossier.mjs";
+import { QuestLogApplication } from "./applications/quest-log.mjs";
 
 function showRaisedHandDialog(payload) {
   const playerName = String(payload?.playerName ?? "Unknown");
@@ -101,6 +107,22 @@ Hooks.once("init", () => {
     type: Object,
     default: DEFAULT_MAPS
   });
+
+  game.settings.register(MODULE_ID, "dossiers", {
+    name: "Campaign Dossier",
+    scope: "world",
+    config: false,
+    type: Object,
+    default: DEFAULT_DOSSIERS
+  });
+
+  game.settings.register(MODULE_ID, "quests", {
+    name: "Campaign Quest Log",
+    scope: "world",
+    config: false,
+    type: Object,
+    default: DEFAULT_QUESTS
+  });
 });
 
 Hooks.once("ready", async () => {
@@ -141,9 +163,15 @@ Hooks.once("ready", async () => {
       getFactionStandings,
       getMaps,
       setMaps,
+      getDossiers,
+      setDossiers,
+      getQuests,
+      setQuests,
       raiseHand,
       openMaps: () => new MapExplorerApplication().render({ force: true }),
       openMap: (mapId) => new MapViewerApplication({ mapId }).render({ force: true }),
+      openDossier: () => new DossierApplication().render({ force: true }),
+      openQuestLog: () => new QuestLogApplication().render({ force: true }),
       openHistory: () => new CalendarHistoryApplication().render({ force: true }),
       openManager: () => {
         if (!game.user.isGM) return ui.notifications.warn("Only a GM can manage the campaign calendar.");

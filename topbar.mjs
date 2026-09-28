@@ -13,6 +13,8 @@ import { CalendarHistoryApplication } from "./applications/history.mjs";
 import { CalendarManagerApplication } from "./applications/manager.mjs";
 import { DayEventsApplication } from "./applications/day-events.mjs";
 import { MapExplorerApplication } from "./applications/map-explorer.mjs";
+import { DossierApplication } from "./applications/dossier.mjs";
+import { QuestLogApplication } from "./applications/quest-log.mjs";
 
 export class CalendarTopBar {
   static mount() {
@@ -247,6 +249,20 @@ export class CalendarTopBar {
     });
     maps.classList.add("cc-browse-button", "cc-maps-button");
     dropdown.append(maps);
+
+    const dossier = this.makeButton("fa-solid fa-address-book", "Dossier", () => {
+      new DossierApplication().render({ force: true });
+      this.closeDropdown();
+    });
+    dossier.classList.add("cc-browse-button", "cc-dossier-button");
+    dropdown.append(dossier);
+
+    const questLog = this.makeButton("fa-solid fa-scroll", "Quest Log", () => {
+      new QuestLogApplication().render({ force: true });
+      this.closeDropdown();
+    });
+    questLog.classList.add("cc-browse-button", "cc-quest-log-button");
+    dropdown.append(questLog);
 
     if (!game.user.isGM) {
       const raise = this.makeButton("fa-solid fa-hand", "Raise Hand", async () => {

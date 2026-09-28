@@ -1,0 +1,50 @@
+<section class="cc-app-content cc-quest-log-content">
+  <header class="cc-section-header cc-quest-log-header">
+    <div>
+      <div class="cc-eyebrow">Player Reference</div>
+      <h2>Quest Log</h2>
+      <p class="cc-subtitle">Quests the GM has made available to the party.</p>
+    </div>
+    {{#if isGM}}
+      <button type="button" class="cc-secondary-button" data-action="manageQuestLog">
+        <i class="fa-solid fa-gear"></i> Manage Quest Log
+      </button>
+    {{/if}}
+  </header>
+
+  {{#if quests.length}}
+    <label class="cc-search-box cc-quest-search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="search" data-role="quest-search" placeholder="Search quests...">
+    </label>
+
+    <div class="cc-quest-log-list">
+      {{#each quests}}
+        <article class="cc-quest-card" data-quest-search="{{searchText}}">
+          <div class="cc-quest-card-header">
+            <div>
+              <h3>{{title}}</h3>
+              {{#if questGiver}}<div class="cc-quest-giver"><i class="fa-solid fa-user"></i> <strong>Quest Giver:</strong> {{questGiver}}</div>{{/if}}
+            </div>
+          </div>
+          <div class="cc-quest-card-body">
+            <div class="cc-quest-section">
+              <h4>Description</h4>
+              {{#if description}}<p>{{description}}</p>{{else}}<p class="cc-quest-empty-field">No description has been recorded.</p>{{/if}}
+            </div>
+            <div class="cc-quest-section cc-quest-reward">
+              <h4><i class="fa-solid fa-gift"></i> Reward</h4>
+              {{#if reward}}<p>{{reward}}</p>{{else}}<p class="cc-quest-empty-field">No reward has been recorded.</p>{{/if}}
+            </div>
+          </div>
+        </article>
+      {{/each}}
+    </div>
+  {{else}}
+    <div class="cc-empty-state cc-quest-log-empty-state">
+      <i class="fa-solid fa-scroll"></i>
+      <p>No quests have been added to the quest log yet.</p>
+      {{#if isGM}}<small>Use Manage Quest Log to add quest entries for the players.</small>{{/if}}
+    </div>
+  {{/if}}
+</section>

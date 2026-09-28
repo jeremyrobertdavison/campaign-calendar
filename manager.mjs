@@ -5,19 +5,25 @@ import {
   getAllEvents,
   getConfig,
   getCurrentDate,
+  getDossiers,
   getFactions,
   getMaps,
+  getQuests,
   makeDateKey,
   normalizeDate,
   parseDateKey,
   setCalendarConfig,
   setCurrentDate,
+  setDossiers,
   setFactions,
-  setMaps
+  setMaps,
+  setQuests
 } from "../calendar-service.mjs";
 import { DayEventsApplication } from "./day-events.mjs";
 import { EventEditorApplication } from "./event-editor.mjs";
 import { MapExplorerApplication } from "./map-explorer.mjs";
+import { DossierApplication } from "./dossier.mjs";
+import { QuestLogApplication } from "./quest-log.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 
@@ -57,6 +63,15 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
       browseMap: CalendarManagerApplication.browseMap,
       saveMaps: CalendarManagerApplication.saveMaps,
       openMapExplorer: CalendarManagerApplication.openMapExplorer,
+      addDossier: CalendarManagerApplication.addDossier,
+      removeDossier: CalendarManagerApplication.removeDossier,
+      browseDossier: CalendarManagerApplication.browseDossier,
+      saveDossiers: CalendarManagerApplication.saveDossiers,
+      openDossier: CalendarManagerApplication.openDossier,
+      addQuest: CalendarManagerApplication.addQuest,
+      removeQuest: CalendarManagerApplication.removeQuest,
+      saveQuests: CalendarManagerApplication.saveQuests,
+      openQuestLog: CalendarManagerApplication.openQuestLog,
       saveConfig: CalendarManagerApplication.saveConfig,
       exportConfig: CalendarManagerApplication.exportConfig,
       importConfig: CalendarManagerApplication.importConfig
@@ -88,6 +103,8 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
     const current = getCurrentDate();
     const factions = getFactions();
     const maps = getMaps();
+    const dossiers = getDossiers();
+    const quests = getQuests();
     const factionNames = new Map(factions.map((faction) => [faction.id, faction.name]));
     const events = getAllEvents()
       .sort((a, b) => {
@@ -122,6 +139,8 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
       monthsText: config.months.map((month) => `${month.name}|${month.days}`).join("\n"),
       factions,
       maps,
+      dossiers,
+      quests,
       events
     };
   }
@@ -328,6 +347,131 @@ export class CalendarManagerApplication extends HandlebarsApplicationMixin(Appli
 
   static openMapExplorer() {
     new MapExplorerApplication().render({ force: true });
+  }
+
+  static addDossier() {
+    const list = this.element.querySelector('[data-role="dossier-list"]');
+    if (!list) return;
+
+    const row = document.createElement("div");
+    row.className = "cc-dossier-edit-row";
+    row.dataset.dossierId = randomId();
+    row.dataset.addedAt = String(Date.now());
+    row.innerHTML = `
+      <div class="cc-dossier-edit-preview cc-dossier-edit-preview-empty" data-role="dossier-preview-wrap">
+        <i class="fa-solid fa-user"></i>
+        <img data-role="dossier-preview" alt="" hidden>
+      </div>
+      <div class="cc-dossier-edit-fields">
+        <input type="text" data-role="dossier-name" placeholder="NPC name">
+        <div class="cc-dossier-path-row">
+          <input type="text" data-role="dossier-path" placeholder="path/to/npc.webp">
+          <button type="button" class="cc-secondary-button" data-action="browseDossier"><i class="fa-solid fa-folder-open"></i> Browse</button>
+        </div>
+        <textarea data-role="dossier-description" rows="3" placeholder="NPC description"></textarea>
+      </div>
+      <button type="button" class="cc-icon-button danger" data-action="removeDossier" title="Remove NPC"><i class="fa-solid fa-trash"></i></button>
+    `;
+    list.append(row);
+    row.querySelector('[data-role="dossier-name"]')?.focus();
+  }
+
+  static removeDossier(event, target) {
+    target.closest(".cc-dossier-edit-row")?.remove();
+  }
+
+  static browseDossier(event, target) {
+    const row = target.closest(".cc-dossier-edit-row");
+    const input = row?.querySelector('[data-role="dossier-path"]');
+    if (!row || !input) return;
+
+    const FilePickerClass = foundry.applications.apps.FilePicker?.implementation
+      ?? foundry.applications.apps.FilePicker
+      ?? globalThis.FilePicker;
+    if (!FilePickerClass) {
+      ui.notifications.error("Foundry's File Picker is not available.");
+      return;
+    }
+
+    const picker = new FilePickerClass({
+      type: "image",
+      current: input.value,
+      callback: (path) => {
+        input.value = path;
+        const preview = row.querySelector('[data-role="dossier-preview"]');
+        const wrap = row.querySelector('[data-role="dossier-preview-wrap"]');
+        if (preview && wrap) {
+          preview.src = path;
+          preview.hidden = false;
+          wrap.classList.remove("cc-dossier-edit-preview-empty");
+        }
+      }
+    });
+    picker.render({ force: true });
+  }
+
+  static async saveDossiers() {
+    const rows = [...this.element.querySelectorAll(".cc-dossier-edit-row")];
+    const dossiers = rows.map((row, index) => ({
+      id: row.dataset.dossierId,
+      name: row.querySelector('[data-role="dossier-name"]')?.value ?? "",
+      path: row.querySelector('[data-role="dossier-path"]')?.value ?? "",
+      description: row.querySelector('[data-role="dossier-description"]')?.value ?? "",
+      addedAt: Number(row.dataset.addedAt) || Date.now(),
+      sort: index
+    }));
+    const saved = await setDossiers(dossiers);
+    ui.notifications.info(`${saved.length} dossier entr${saved.length === 1 ? "y" : "ies"} saved.`);
+    this.render({ force: true });
+  }
+
+  static openDossier() {
+    new DossierApplication().render({ force: true });
+  }
+
+  static addQuest() {
+    const list = this.element.querySelector('[data-role="quest-list"]');
+    if (!list) return;
+
+    const row = document.createElement("div");
+    row.className = "cc-quest-edit-row";
+    row.dataset.questId = randomId();
+    row.dataset.addedAt = String(Date.now());
+    row.innerHTML = `
+      <div class="cc-quest-edit-fields">
+        <input type="text" data-role="quest-title" placeholder="Quest title">
+        <input type="text" data-role="quest-giver" placeholder="Quest giver">
+        <textarea data-role="quest-description" rows="4" placeholder="Quest description"></textarea>
+        <textarea data-role="quest-reward" rows="2" placeholder="Reward"></textarea>
+      </div>
+      <button type="button" class="cc-icon-button danger" data-action="removeQuest" title="Remove quest"><i class="fa-solid fa-trash"></i></button>
+    `;
+    list.append(row);
+    row.querySelector('[data-role="quest-title"]')?.focus();
+  }
+
+  static removeQuest(event, target) {
+    target.closest(".cc-quest-edit-row")?.remove();
+  }
+
+  static async saveQuests() {
+    const rows = [...this.element.querySelectorAll(".cc-quest-edit-row")];
+    const quests = rows.map((row, index) => ({
+      id: row.dataset.questId,
+      title: row.querySelector('[data-role="quest-title"]')?.value ?? "",
+      questGiver: row.querySelector('[data-role="quest-giver"]')?.value ?? "",
+      description: row.querySelector('[data-role="quest-description"]')?.value ?? "",
+      reward: row.querySelector('[data-role="quest-reward"]')?.value ?? "",
+      addedAt: Number(row.dataset.addedAt) || Date.now(),
+      sort: index
+    }));
+    const saved = await setQuests(quests);
+    ui.notifications.info(`${saved.length} quest${saved.length === 1 ? "" : "s"} saved.`);
+    this.render({ force: true });
+  }
+
+  static openQuestLog() {
+    new QuestLogApplication().render({ force: true });
   }
 
   static async saveConfig() {

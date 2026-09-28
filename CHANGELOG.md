@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.5.0 — Quest Log
+
+- Added a **Quest Log** button beside Maps and Dossier in the calendar dropdown.
+- Added a searchable player-facing Quest Log window.
+- Added a GM-managed **Quest Log** panel to the calendar manager.
+- Quest entries include a **title**, **quest giver**, **description**, and **reward**.
+- Quest Log data is persistent world data and synchronizes to connected clients after the GM saves changes.
+- Only GMs can add, edit, or remove Quest Log entries.
+- Added `getQuests`, `setQuests`, and `openQuestLog` to the public module API.
+
+## 1.4.0 — Campaign Dossier
+
+- Added a **Dossier** button to the calendar dropdown for players and GMs.
+- Added a searchable player-facing Dossier for key NPC references.
+- Added a GM-managed **Campaign Dossier** panel to the calendar manager.
+- Dossier entries include an NPC name, image/portrait, and description.
+- Added Foundry File Picker integration for selecting NPC images.
+- Only NPCs explicitly saved by a GM are visible in the Dossier.
+- Dossier updates synchronize to connected clients without changing scenes or other players' windows.
+- Added `getDossiers`, `setDossiers`, and `openDossier` to the public module API.
+
 ## 1.3.0 — Raise Hand
 
 - Added a **Raise Hand** button to the player calendar dropdown.
