@@ -2,7 +2,7 @@
   "id": "campaign-calendar",
   "title": "Campaign Calendar",
   "description": "A system-agnostic in-game calendar and campaign history for Foundry VTT with date controls, event notes, faction reputation tracking, XP, item/equipment changes, maps, NPC dossiers, quest tracking with deferred faction rewards, and player raise-hand alerts.",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "authors": [
     {
       "name": "Jeremy Davison",

@@ -1,0 +1,269 @@
+<section class="cc-app-content cc-manager-content">
+  <header class="cc-section-header">
+    <div>
+      <div class="cc-eyebrow">GM Controls</div>
+      <h2>{{config.name}}</h2>
+      <p class="cc-subtitle">Current date: <strong>{{currentLabel}}</strong></p>
+    </div>
+    <button type="button" class="cc-primary-button" data-action="newEvent">
+      <i class="fa-solid fa-plus"></i> Add Event
+    </button>
+  </header>
+
+  <section class="cc-panel">
+    <div class="cc-panel-title">
+      <h3><i class="fa-solid fa-calendar-day"></i> Current Date</h3>
+    </div>
+    <div class="cc-date-control-row">
+      <button type="button" class="cc-icon-button" data-action="previousDay" title="Previous day"><i class="fa-solid fa-minus"></i></button>
+      <label class="cc-date-field"><span>Month</span><select name="current-month">
+        {{#each months}}
+          <option value="{{index}}" {{#if selected}}selected{{/if}}>{{name}}</option>
+        {{/each}}
+      </select></label>
+      <label class="cc-date-field"><span>Day</span><input type="number" name="current-day" min="1" value="{{current.day}}"></label>
+      <label class="cc-date-field"><span>Year</span><input type="number" name="current-year" value="{{current.year}}"></label>
+      <label class="cc-date-field"><span>Era / Age</span><input type="text" name="current-era" value="{{current.era}}" placeholder="DR"></label>
+      <button type="button" class="cc-secondary-button" data-action="saveDate"><i class="fa-solid fa-check"></i> Set Date</button>
+      <button type="button" class="cc-icon-button" data-action="nextDay" title="Next day"><i class="fa-solid fa-plus"></i></button>
+    </div>
+  </section>
+
+  <section class="cc-panel">
+    <div class="cc-panel-title cc-panel-title-row">
+      <div>
+        <h3><i class="fa-solid fa-flag"></i> Factions</h3>
+        <p>Set each faction's starting score. Event changes are added to this value to create the current and historical scores.</p>
+      </div>
+      <button type="button" class="cc-secondary-button" data-action="addFaction"><i class="fa-solid fa-plus"></i> Add Faction</button>
+    </div>
+    <div class="cc-faction-edit-head">
+      <span>Faction</span><span>Starting Score</span><span></span>
+    </div>
+    <div class="cc-faction-edit-list" data-role="faction-list">
+      {{#each factions}}
+        <div class="cc-faction-edit-row" data-faction-id="{{id}}">
+          <input type="text" data-role="faction-name" value="{{name}}" placeholder="Faction name">
+          <input type="number" data-role="faction-base-score" value="{{baseScore}}" title="Starting score">
+          <button type="button" class="cc-icon-button danger" data-action="removeFaction" title="Remove faction"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      {{/each}}
+    </div>
+    {{#unless factions.length}}<p class="cc-helper-message">No factions are configured yet.</p>{{/unless}}
+    <div class="cc-config-actions">
+      <button type="button" class="cc-primary-button" data-action="saveFactions"><i class="fa-solid fa-floppy-disk"></i> Save Factions</button>
+    </div>
+  </section>
+
+  <section class="cc-panel">
+    <div class="cc-panel-title cc-panel-title-row">
+      <div>
+        <h3><i class="fa-solid fa-map"></i> Campaign Maps</h3>
+        <p>Add map images that players can open for themselves from the calendar dropdown. Only maps saved here appear in the Map Explorer.</p>
+      </div>
+      <div class="cc-manager-map-actions">
+        <button type="button" class="cc-secondary-button" data-action="openMapExplorer"><i class="fa-solid fa-map-location-dot"></i> Open Explorer</button>
+        <button type="button" class="cc-secondary-button" data-action="addMap"><i class="fa-solid fa-plus"></i> Add Map</button>
+      </div>
+    </div>
+
+    <div class="cc-map-edit-list" data-role="map-list">
+      {{#each maps}}
+        <div class="cc-map-edit-row" data-map-id="{{id}}" data-added-at="{{addedAt}}">
+          <div class="cc-map-edit-preview" data-role="map-preview-wrap">
+            <img data-role="map-preview" src="{{path}}" alt="{{name}}">
+          </div>
+          <div class="cc-map-edit-fields">
+            <input type="text" data-role="map-name" value="{{name}}" placeholder="Map name">
+            <div class="cc-map-path-row">
+              <input type="text" data-role="map-path" value="{{path}}" placeholder="path/to/map.webp">
+              <button type="button" class="cc-secondary-button" data-action="browseMap"><i class="fa-solid fa-folder-open"></i> Browse</button>
+            </div>
+            <input type="text" data-role="map-description" value="{{description}}" placeholder="Short description (optional)">
+          </div>
+          <button type="button" class="cc-icon-button danger" data-action="removeMap" title="Remove map"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      {{/each}}
+    </div>
+    {{#unless maps.length}}<p class="cc-helper-message">No campaign maps have been added yet.</p>{{/unless}}
+    <div class="cc-config-actions">
+      <button type="button" class="cc-primary-button" data-action="saveMaps"><i class="fa-solid fa-floppy-disk"></i> Save Maps</button>
+    </div>
+  </section>
+
+  <section class="cc-panel">
+    <div class="cc-panel-title cc-panel-title-row">
+      <div>
+        <h3><i class="fa-solid fa-address-book"></i> Campaign Dossier</h3>
+        <p>Add key NPCs that players can reference from the calendar dropdown. Only NPCs saved here appear in the Dossier.</p>
+      </div>
+      <div class="cc-manager-dossier-actions">
+        <button type="button" class="cc-secondary-button" data-action="openDossier"><i class="fa-solid fa-address-book"></i> Open Dossier</button>
+        <button type="button" class="cc-secondary-button" data-action="addDossier"><i class="fa-solid fa-plus"></i> Add NPC</button>
+      </div>
+    </div>
+
+    {{#if isGM}}
+      <div class="cc-dossier-actor-add">
+        <label class="cc-field">
+          <span>Existing Actor</span>
+          <select data-role="dossier-actor" {{#unless dossierActors.length}}disabled{{/unless}}>
+            <option value="">{{#if dossierActors.length}}Select an Actor…{{else}}No world Actors available{{/if}}</option>
+            {{#each dossierActors}}
+              <option value="{{id}}">{{label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        <button type="button" class="cc-secondary-button" data-action="addDossierFromActor" {{#unless dossierActors.length}}disabled{{/unless}}><i class="fa-solid fa-user-plus"></i> Add from Actor</button>
+      </div>
+      <p class="cc-dossier-actor-help">Copies the Actor's name and portrait. Write a player-facing description, then save the Dossier to share it.</p>
+    {{/if}}
+
+    <div class="cc-dossier-edit-list" data-role="dossier-list">
+      {{#each dossiers}}
+        <div class="cc-dossier-edit-row" data-dossier-id="{{id}}" data-added-at="{{addedAt}}">
+          <div class="cc-dossier-edit-preview" data-role="dossier-preview-wrap">
+            <img data-role="dossier-preview" src="{{path}}" alt="{{name}}">
+          </div>
+          <div class="cc-dossier-edit-fields">
+            <input type="text" data-role="dossier-name" value="{{name}}" placeholder="NPC name">
+            <div class="cc-dossier-path-row">
+              <input type="text" data-role="dossier-path" value="{{path}}" placeholder="path/to/npc.webp">
+              <button type="button" class="cc-secondary-button" data-action="browseDossier"><i class="fa-solid fa-folder-open"></i> Browse</button>
+            </div>
+            <textarea data-role="dossier-description" rows="3" placeholder="NPC description">{{description}}</textarea>
+          </div>
+          <button type="button" class="cc-icon-button danger" data-action="removeDossier" title="Remove NPC"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      {{/each}}
+    </div>
+    <p class="cc-helper-message" data-role="dossier-empty" {{#if dossiers.length}}hidden{{/if}}>No key NPCs have been added to the dossier yet.</p>
+    <div class="cc-config-actions">
+      <button type="button" class="cc-primary-button" data-action="saveDossiers"><i class="fa-solid fa-floppy-disk"></i> Save Dossier</button>
+    </div>
+  </section>
+
+  <section class="cc-panel">
+    <div class="cc-panel-title cc-panel-title-row">
+      <div>
+        <h3><i class="fa-solid fa-scroll"></i> Quest Log</h3>
+        <p>Add quests that players can review from the calendar dropdown. Faction point rewards are shown while a quest is active, but only affect faction standings once the quest is completed.</p>
+      </div>
+      <div class="cc-manager-quest-actions">
+        <button type="button" class="cc-secondary-button" data-action="openQuestLog"><i class="fa-solid fa-scroll"></i> Open Quest Log</button>
+        <button type="button" class="cc-secondary-button" data-action="addQuest"><i class="fa-solid fa-plus"></i> Add Quest</button>
+      </div>
+    </div>
+
+    <div class="cc-quest-edit-list" data-role="quest-list">
+      {{#each quests}}
+        <div class="cc-quest-edit-row" data-quest-id="{{id}}" data-added-at="{{addedAt}}">
+          <div class="cc-quest-edit-fields">
+            <input type="text" data-role="quest-title" value="{{title}}" placeholder="Quest title">
+            <input type="text" data-role="quest-giver" value="{{questGiver}}" placeholder="Quest giver">
+            <label class="cc-quest-status-field">
+              <span>Status</span>
+              <select data-role="quest-status">
+                <option value="active" {{#if (eq status "active")}}selected{{/if}}>Active</option>
+                <option value="completed" {{#if (eq status "completed")}}selected{{/if}}>Completed</option>
+              </select>
+            </label>
+            <textarea data-role="quest-description" rows="4" placeholder="Quest description">{{description}}</textarea>
+            <textarea data-role="quest-reward" rows="2" placeholder="Reward">{{reward}}</textarea>
+
+            <div class="cc-quest-faction-rewards">
+              <div class="cc-quest-faction-rewards-header">
+                <div>
+                  <strong>Faction Point Rewards</strong>
+                  <small>Displayed to players now; added to standings only when this quest is Completed.</small>
+                </div>
+                <button type="button" class="cc-secondary-button" data-action="addQuestFactionReward"><i class="fa-solid fa-plus"></i> Add Faction Reward</button>
+              </div>
+              <div class="cc-quest-faction-reward-list" data-role="quest-faction-reward-list">
+                {{#each factionRewardRows}}
+                  <div class="cc-quest-faction-reward-row" data-quest-faction-reward-row>
+                    <select data-role="quest-faction-id">
+                      {{#each options}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}
+                    </select>
+                    <input type="number" step="1" value="{{delta}}" data-role="quest-faction-delta" title="Faction points awarded on completion">
+                    <button type="button" class="cc-icon-button danger" data-action="removeQuestFactionReward" title="Remove faction reward"><i class="fa-solid fa-trash"></i></button>
+                  </div>
+                {{/each}}
+              </div>
+            </div>
+          </div>
+          <button type="button" class="cc-icon-button danger" data-action="removeQuest" title="Remove quest"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      {{/each}}
+    </div>
+    {{#unless quests.length}}<p class="cc-helper-message">No quests have been added to the quest log yet.</p>{{/unless}}
+    <div class="cc-config-actions">
+      <button type="button" class="cc-primary-button" data-action="saveQuests"><i class="fa-solid fa-floppy-disk"></i> Save Quest Log</button>
+    </div>
+  </section>
+
+  <section class="cc-panel cc-manager-events-panel">
+    <div class="cc-panel-title cc-panel-title-row">
+      <h3><i class="fa-solid fa-list"></i> Campaign Events</h3>
+      <label class="cc-search-box compact">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="search" data-role="event-search" placeholder="Search events...">
+      </label>
+    </div>
+
+    <div class="cc-manager-events">
+      {{#if events.length}}
+        {{#each events}}
+          <article class="cc-manager-event" data-event-search="{{searchText}}">
+            <button type="button" class="cc-event-open" data-action="openDay" data-date-key="{{dateKey}}">
+              <span class="cc-manager-event-title">
+                {{#if pinned}}<i class="fa-solid fa-thumbtack"></i>{{/if}}
+                <strong>{{title}}</strong>
+                <span class="cc-visibility-badge {{visibility}}">{{#if (eq visibility "gm")}}GM Only{{else}}Players{{/if}}</span>
+              </span>
+              <small>{{dateLabel}}</small>
+              {{#if bodyPreview}}<p>{{bodyPreview}}</p>{{/if}}
+            </button>
+            <div class="cc-event-actions">
+              <button type="button" class="cc-icon-button" data-action="editEvent" data-event-id="{{id}}" title="Edit"><i class="fa-solid fa-pen"></i></button>
+              <button type="button" class="cc-icon-button danger" data-action="deleteEvent" data-event-id="{{id}}" title="Delete"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </article>
+        {{/each}}
+      {{else}}
+        <div class="cc-empty-state compact"><p>No events have been created yet.</p></div>
+      {{/if}}
+    </div>
+  </section>
+
+  <section class="cc-panel">
+    <div class="cc-panel-title">
+      <h3><i class="fa-solid fa-sliders"></i> Calendar Configuration</h3>
+      <p>One month per line using <code>Month Name|Number of Days</code>.</p>
+    </div>
+    <div class="cc-form-grid">
+      <label class="cc-field">
+        <span>Calendar Name</span>
+        <input type="text" name="calendar-name" value="{{config.name}}">
+      </label>
+      <label class="cc-field">
+        <span>Year Label</span>
+        <input type="text" name="year-label" value="{{config.yearLabel}}">
+      </label>
+      <label class="cc-field cc-span-2">
+        <span>Default Era / Age <small>(optional)</small></span>
+        <input type="text" name="default-era" value="{{config.defaultEra}}" placeholder="DR">
+      </label>
+      <label class="cc-field cc-span-2">
+        <span>Months</span>
+        <textarea name="months" rows="8" spellcheck="false">{{monthsText}}</textarea>
+      </label>
+    </div>
+    <div class="cc-config-actions">
+      <button type="button" class="cc-primary-button" data-action="saveConfig"><i class="fa-solid fa-floppy-disk"></i> Save Configuration</button>
+      <button type="button" class="cc-secondary-button" data-action="exportConfig"><i class="fa-solid fa-file-export"></i> Export JSON</button>
+      <button type="button" class="cc-secondary-button" data-action="importConfig"><i class="fa-solid fa-file-import"></i> Import JSON</button>
+      <input type="file" data-role="config-file" accept="application/json,.json" hidden>
+    </div>
+  </section>
+</section>

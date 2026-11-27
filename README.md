@@ -35,6 +35,7 @@ GMs can control the date, define a custom calendar, record rich-text events for 
 - **Interactive map viewer** with mouse-wheel zoom, click-drag panning, Fit, and 100% controls.
 - **Key NPC Dossier** accessible from the date dropdown, with GM-curated names, portraits, and descriptions.
 - **Dossier search** so players can quickly find a known NPC.
+- **Add from Actor** to quickly copy a world Actor’s name and portrait into the Dossier.
 - **Quest Log** accessible from the date dropdown, with GM-managed title, quest giver, description, reward, and Active/Completed status.
 - **Faction point quest rewards** that are visible while a quest is Active but do not change faction standings until the quest is marked Completed.
 - **Completion-date tracking** so quest faction rewards enter historical standings on the day the quest is completed.
@@ -162,6 +163,8 @@ To add NPCs as a GM:
 4. Enter the NPC's name and description.
 5. Use **Browse** to select a portrait or other image with Foundry's File Picker, or enter the Foundry asset path directly.
 6. Select **Save Dossier**.
+
+**Quick add from an existing Actor:** In the same panel, select an Actor from the **Existing Actor** dropdown, then click **Add from Actor**. The name and Actor portrait (not token artwork) are copied into a new editable row. Enter a public-facing description, optionally adjust the name or image, and click **Save Dossier**. The list includes world Actors; import a compendium Actor into the world first if needed. This copies a snapshot rather than creating a live document link, so later changes to the Actor do not overwrite your curated dossier. No Actor sheet data or ID is stored in the dossier, and Actor permissions are not changed.
 
 Players can then open **Dossier** at any time without changing scenes or affecting another player's interface. Only NPCs saved in the Campaign Dossier panel are shown. Removing an NPC from the dossier does not delete the underlying image file from Foundry storage.
 

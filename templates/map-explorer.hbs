@@ -1,0 +1,44 @@
+<section class="cc-app-content cc-map-explorer-content">
+  <header class="cc-section-header cc-map-explorer-header">
+    <div>
+      <div class="cc-eyebrow">Player Reference</div>
+      <h2>Maps</h2>
+      <p class="cc-subtitle">Maps made available by the GM for this campaign.</p>
+    </div>
+    {{#if isGM}}
+      <button type="button" class="cc-secondary-button" data-action="manageMaps">
+        <i class="fa-solid fa-gear"></i> Manage Maps
+      </button>
+    {{/if}}
+  </header>
+
+  {{#if maps.length}}
+    <label class="cc-search-box cc-map-search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="search" data-role="map-search" placeholder="Search maps...">
+    </label>
+
+    <div class="cc-map-grid">
+      {{#each maps}}
+        <article class="cc-map-card" data-map-id="{{id}}" data-map-search="{{searchText}}">
+          <button type="button" class="cc-map-card-preview" data-action="openMap" data-map-id="{{id}}" title="Open {{name}}">
+            <img src="{{path}}" alt="{{name}}" loading="lazy">
+          </button>
+          <div class="cc-map-card-body">
+            <h3>{{name}}</h3>
+            {{#if description}}<p>{{description}}</p>{{/if}}
+            <button type="button" class="cc-primary-button" data-action="openMap" data-map-id="{{id}}">
+              <i class="fa-solid fa-expand"></i> Open Map
+            </button>
+          </div>
+        </article>
+      {{/each}}
+    </div>
+  {{else}}
+    <div class="cc-empty-state cc-map-empty-state">
+      <i class="fa-regular fa-map"></i>
+      <p>No campaign maps have been added yet.</p>
+      {{#if isGM}}<small>Use Manage Maps to add image files for the players.</small>{{/if}}
+    </div>
+  {{/if}}
+</section>

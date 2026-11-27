@@ -1,0 +1,126 @@
+<section class="cc-app-content cc-event-editor-content">
+  <header class="cc-section-header">
+    <div>
+      <div class="cc-eyebrow">{{#if isEdit}}Edit Event{{else}}New Event{{/if}}</div>
+      <h2>{{#if isEdit}}{{event.title}}{{else}}Add a Campaign Event{{/if}}</h2>
+    </div>
+  </header>
+
+  <div class="cc-form-grid">
+    <label class="cc-field cc-span-2">
+      <span>Title</span>
+      <input type="text" name="title" value="{{event.title}}" required placeholder="The Broken Bridge">
+    </label>
+
+    <label class="cc-field">
+      <span>Month</span>
+      <select name="month">
+        {{#each months}}
+          <option value="{{index}}" {{#if selected}}selected{{/if}}>{{name}}</option>
+        {{/each}}
+      </select>
+    </label>
+
+    <label class="cc-field">
+      <span>Day</span>
+      <input type="number" name="day" min="1" value="{{date.day}}" required>
+    </label>
+
+    <label class="cc-field">
+      <span>Year</span>
+      <input type="number" name="year" value="{{date.year}}" required>
+    </label>
+
+    <label class="cc-field">
+      <span>Era / Age <small>(optional)</small></span>
+      <input type="text" name="era" value="{{date.era}}" placeholder="DR">
+    </label>
+
+    <label class="cc-field">
+      <span>Visibility</span>
+      <select name="visibility">
+        <option value="public" {{#if (eq event.visibility "public")}}selected{{/if}}>Visible to Players</option>
+        <option value="gm" {{#if (eq event.visibility "gm")}}selected{{/if}}>GM Only</option>
+      </select>
+    </label>
+
+    <label class="cc-check-field">
+      <input type="checkbox" name="pinned" {{#if event.pinned}}checked{{/if}}>
+      <span>Pin this event as important</span>
+    </label>
+  </div>
+
+  <section class="cc-event-tracking-editor">
+    <div class="cc-panel-title">
+      <h3><i class="fa-solid fa-chart-line"></i> Event Tracking</h3>
+      <p>Record XP, faction reputation changes, and equipment gained or lost because of this event.</p>
+    </div>
+
+    <label class="cc-field cc-xp-field">
+      <span>XP Change <small>(optional)</small></span>
+      <input type="number" name="xp" step="1" value="{{#if hasXp}}{{event.xp}}{{/if}}" placeholder="500">
+      <small>Use a negative number if XP is ever removed.</small>
+    </label>
+
+    <div class="cc-tracking-section">
+      <div class="cc-tracking-section-header">
+        <div>
+          <strong>Faction Score Changes</strong>
+          <small>Positive numbers increase the score; negative numbers reduce it.</small>
+        </div>
+        <button type="button" class="cc-secondary-button" data-action="addFactionChange" {{#unless hasFactions}}disabled{{/unless}}>
+          <i class="fa-solid fa-plus"></i> Add Faction Change
+        </button>
+      </div>
+      {{#unless hasFactions}}
+        <p class="cc-helper-message">No factions exist yet. Add them from the GM Manager first.</p>
+      {{/unless}}
+      <div class="cc-tracking-list" data-role="faction-changes">
+        {{#each factionChangeRows}}
+          <div class="cc-tracking-row" data-faction-change-row>
+            <select data-role="faction-id">
+              {{#each options}}
+                <option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>
+              {{/each}}
+            </select>
+            <input type="number" step="1" value="{{delta}}" data-role="faction-delta" title="Faction score change">
+            <button type="button" class="cc-icon-button danger" data-action="removeFactionChange" title="Remove faction change"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="cc-tracking-section">
+      <div class="cc-tracking-section-header">
+        <div>
+          <strong>Items & Equipment</strong>
+          <small>Use a positive quantity for gains and a negative quantity for losses.</small>
+        </div>
+        <button type="button" class="cc-secondary-button" data-action="addItemChange">
+          <i class="fa-solid fa-plus"></i> Add Item
+        </button>
+      </div>
+      <div class="cc-tracking-list" data-role="item-changes">
+        {{#each itemChanges}}
+          <div class="cc-tracking-row cc-item-change-row" data-item-change-row>
+            <input type="text" value="{{name}}" data-role="item-name" placeholder="Item or equipment">
+            <input type="number" step="1" value="{{quantity}}" data-role="item-quantity" title="Quantity change">
+            <button type="button" class="cc-icon-button danger" data-action="removeItemChange" title="Remove item change"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        {{/each}}
+      </div>
+    </div>
+  </section>
+
+  <div class="cc-field cc-editor-field">
+    <span>Event Details</span>
+    <prose-mirror name="body" value="{{event.body}}" placeholder="What happened on this day?" open></prose-mirror>
+  </div>
+
+  <footer class="cc-form-footer">
+    <button type="submit" class="cc-primary-button">
+      <i class="fa-solid fa-floppy-disk"></i>
+      {{#if isEdit}}Save Changes{{else}}Add Event{{/if}}
+    </button>
+  </footer>
+</section>

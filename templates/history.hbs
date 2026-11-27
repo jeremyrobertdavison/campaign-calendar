@@ -1,0 +1,39 @@
+<section class="cc-app-content cc-history-content">
+  <header class="cc-section-header">
+    <div>
+      <div class="cc-eyebrow">Campaign Calendar</div>
+      <h2>Recorded History</h2>
+    </div>
+  </header>
+
+  <label class="cc-search-box">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" data-role="search" placeholder="Search dates and event titles...">
+  </label>
+
+  <div class="cc-history-list">
+    {{#if groups.length}}
+      {{#each groups}}
+        <button type="button"
+                class="cc-history-card"
+                data-action="openDay"
+                data-date-key="{{key}}"
+                data-search="{{label}} {{#each events}}{{title}} {{/each}}">
+          <span class="cc-history-card-main">
+            <strong>{{#if pinned}}<i class="fa-solid fa-thumbtack"></i>{{/if}} {{label}}</strong>
+            <small>{{count}} recorded event{{#unless (eq count 1)}}s{{/unless}}</small>
+          </span>
+          <span class="cc-history-card-meta">
+            {{#if hasGmOnly}}{{#if ../isGM}}<span class="cc-visibility-badge gm">GM</span>{{/if}}{{/if}}
+            <i class="fa-solid fa-chevron-right"></i>
+          </span>
+        </button>
+      {{/each}}
+    {{else}}
+      <div class="cc-empty-state">
+        <i class="fa-solid fa-book"></i>
+        <p>No calendar history has been recorded yet.</p>
+      </div>
+    {{/if}}
+  </div>
+</section>

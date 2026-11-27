@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.7.0 — Dossier Quick Add from Actor
+
+- Added a GM-only world Actor selector and **Add from Actor** button in the Campaign Dossier manager.
+- Copies the selected Actor’s name and portrait into an editable draft dossier entry without importing the Actor’s biography, stats, permissions, or ID.
+- Existing manual entries and save behavior are unchanged; imported references are snapshots and do not track subsequent Actor edits.
+- Existing world data remains compatible.
+
 ## 1.6.1 — Live Client Date Synchronization
 
 - Fixed the current campaign date not refreshing automatically on connected player screens when the GM advances, reverses, or directly changes the date.
